@@ -3,10 +3,13 @@
     "version": "0.1.0",
     "description": "A coventional commits workflow tool",
     "main": "src/index.js",
+    "files": [
+        "bin"
+    ],
     "repository": "git@github.com:ones-io/committed.git",
     "license": "MIT",
     "scripts": {
-        "start": "webpack",
+        "build": "node scripts/build.js",
         "lint": "eslint ."
     },
     "devDependencies": {
@@ -15,6 +18,7 @@
         "eslint-config-prettier": "^3.3.0",
         "eslint-plugin-import": "^2.14.0",
         "eslint-plugin-prettier": "^3.0.1",
-        "prettier": "^1.15.3"
+        "prettier": "^1.15.3",
+        "terser": "^3.14.1"
     }
 }

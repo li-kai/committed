@@ -11,8 +11,10 @@ const { promisify } = require('util');
 
 module.exports = {
   ...fs,
+  symlink: promisify(fs.symlink),
   readFile: promisify(fs.readFile),
   lstat: promisify(fs.lstat),
+  mkdir: promisify(fs.mkdir),
   readdir: promisify(fs.readdir),
   access: promisify(fs.access),
 };

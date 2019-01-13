@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+// @ones-io/committed
 const fs = require('fs');
 const os = require('os');
 const util = require('util');

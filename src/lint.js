@@ -5,13 +5,7 @@ const os = require('os');
 const util = require('util');
 const path = require('path');
 const { makeValidator } = require('./validation');
-
-const report = {
-  error(message, exit = true) {
-    console.error(message);
-    if (exit) process.exit(1);
-  },
-};
+const report = require('./report');
 
 const args = process.argv;
 

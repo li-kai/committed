@@ -93,6 +93,7 @@ const descriptionValidator = validator(
   /^(\w.+)$/,
   `description is missing or has redundant whitespace`
 );
+const newLineValidator = validator('', /(\r\n|\r|\n)^$/, `line must be empty`);
 
 function compose(fns) {
   return (config) => fns.reduce((pre, fn) => fn(pre), config);
@@ -108,28 +109,33 @@ function lintCommitMessage(message) {
     descriptionValidator,
   ]);
 
-  switch (lines.length) {
-    case 3:
-    case 2:
-    case 1: {
-      const result = headerValidator({
-        string: lines[0],
-        matches: {},
-        errors: [],
-      });
+  const errors = [];
 
-      if (result.errors.length) {
-        const errors = [
-          `header follows "<type>[optional scope]: <description>" format`,
-          ...result.errors,
-        ].join(os.EOL);
+  if (lines.length >= 1) {
+    const result = headerValidator({
+      string: lines[0],
+      matches: {},
+      errors: [],
+    });
 
-        report.error(errors);
-      }
-      break;
+    if (result.errors.length) {
+      errors.push(
+        `header expects "<type>[optional scope]: <description>" format`
+      );
+      errors.push(...result.errors);
     }
-    default:
-      break;
+  }
+  if (lines.length >= 2) {
+    const result = newLineValidator({
+      string: lines[1],
+      matches: {},
+      errors: [],
+    });
+    errors.push(...result.errors);
+  }
+
+  if (errors.length) {
+    report.error(errors.join(os.EOL));
   }
 }
 
@@ -140,6 +146,5 @@ readFileAsync(path.normalize(commitMessagePath))
   })
   .catch((err) => report.error(err.message))
   .then(() => {
-    console.log('object');
     process.exit(0);
   });

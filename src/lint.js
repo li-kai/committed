@@ -5,7 +5,7 @@ const os = require('os');
 const util = require('util');
 const path = require('path');
 const { makeValidator } = require('./validation');
-const report = require('./report');
+const report = require('./utils/report');
 
 const args = process.argv;
 

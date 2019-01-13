@@ -1204,6 +1204,11 @@ fast-diff@^1.1.2:
   resolved "http://localhost:4873/fast-diff/-/fast-diff-1.2.0.tgz#73ee11982d86caaf7959828d519cfe927fac5f03"
   integrity sha512-xJuoT5+L99XlZ8twedaRf6Ax2TgQVxvgZOYoPKqZufmJib0tL2tegPBOZb1pVNgIhlqDlA0eO0c3wBvQcmzx4w==
 
+fast-extend@0.0.2:
+  version "0.0.2"
+  resolved "http://localhost:4873/fast-extend/-/fast-extend-0.0.2.tgz#f5ec42cf40b9460f521a6387dfb52deeed671dbd"
+  integrity sha1-9exCz0C5Rg9SGmOH37Ut7u1nHb0=
+
 fast-json-stable-stringify@^2.0.0:
   version "2.0.0"
   resolved "http://localhost:4873/fast-json-stable-stringify/-/fast-json-stable-stringify-2.0.0.tgz#d5142c0caee6b1189f87d3a76111064f86c8bbf2"
@@ -1334,6 +1339,11 @@ fs-minipass@^1.2.5:
   integrity sha512-JhBl0skXjUPCFH7x6x61gQxrKyXsxB5gcgePLZCwfyCGGsTISMoIeObbrvVeP6Xmyaudw4TT43qV2Gz+iyd2oQ==
   dependencies:
     minipass "^2.2.1"
+
+fs-monkey@^0.3.3:
+  version "0.3.3"
+  resolved "http://localhost:4873/fs-monkey/-/fs-monkey-0.3.3.tgz#7960bb2b1fa2653731b9d0e2e84812a7e8b3664a"
+  integrity sha512-FNUvuTAJ3CqCQb5ELn+qCbGR/Zllhf2HtwsdAtBi59s1WeCjKMT81fHcSu7dwIskqGVK+MmOrb7VOBlq3/SItw==
 
 fs.realpath@^1.0.0:
   version "1.0.0"
@@ -2520,6 +2530,14 @@ mem@^1.1.0:
   integrity sha1-Xt1StIXKHZAP5kiVUFOZoN+kX3Y=
   dependencies:
     mimic-fn "^1.0.0"
+
+memfs@^2.14.2:
+  version "2.14.2"
+  resolved "http://localhost:4873/memfs/-/memfs-2.14.2.tgz#c927a70e98588b7b803ccc326beeffe701bc57d3"
+  integrity sha512-y19j9L+b8nuDKwuwrrIOiDhDD2bi7pfL1/Z8kfCyPaoZzHxX2aRcI2Q5T6qdUzqVHWd3plAfxeDT3Crb2eCwUw==
+  dependencies:
+    fast-extend "0.0.2"
+    fs-monkey "^0.3.3"
 
 merge-stream@^1.0.1:
   version "1.0.1"

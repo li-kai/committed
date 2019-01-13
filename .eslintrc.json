@@ -2,5 +2,13 @@
     "extends": ["airbnb-base", "plugin:prettier/recommended"],
     "rules": {
         "no-console": "off"
-    }
+    },
+    "overrides": [
+        {
+            "files": ["**/*.test.js"],
+            "env": {
+                "jest": true
+            }
+        }
+    ]
 }

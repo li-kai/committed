@@ -1,13 +1,11 @@
 #!/usr/bin/env node
 
-const childProcess = require('child_process');
-const readline = require('readline');
 const fs = require('fs');
 const os = require('os');
 const util = require('util');
 const path = require('path');
 
-const utils = {
+const report = {
   error(message, exit = true) {
     console.error(message);
     if (exit) process.exit(1);
@@ -17,7 +15,7 @@ const utils = {
 const args = process.argv;
 
 if (args.length !== 3) {
-  utils.error('Path to commit message not found');
+  report.error('Path to commit message not found');
 }
 
 const commitMessagePath = args[2];
@@ -38,87 +36,63 @@ const types = [
   'test',
 ];
 
-function typesValidator(config) {
-  const typesRegex = new RegExp(types.join('|'));
+function validator(key, regex, errorMsg) {
+  return (config) => {
+    const res = regex.exec(config.string);
+    if (res === null) {
+      if (!errorMsg) {
+        return { ...config };
+      }
 
-  const res = typesRegex.exec(config.string);
-  if (res === null) {
-    const errorMsg = `commit must start with the following types: ${types.join(
-      ', '
-    )}`;
+      return {
+        ...config,
+        errors: config.errors.concat(errorMsg),
+      };
+    }
 
-    return {
+    const value = res[0];
+    const endIndex = res.index + value.length;
+    const restOfString = config.string.slice(endIndex);
+
+    const result = {
       ...config,
-      errors: config.errors.concat(errorMsg),
+      string: restOfString,
+      matches: { ...config.matches },
     };
-  }
 
-  return {
-    ...config,
-    string: config.string.slice(res.index + res[0].length),
-    matches: {
-      ...config.matches,
-      type: res[0],
-    },
+    if (key) {
+      result.matches[key] = value;
+    }
+
+    return result;
   };
 }
 
-function scopeValidator(config) {
-  const typesRegex = /(\([\w+]\))/;
-
-  const res = typesRegex.exec(config.string);
-  if (res === null) {
-    return config;
-  }
-
-  return {
-    ...config,
-    string: config.string.slice(res.index + res[0].length),
-    matches: {
-      ...config.matches,
-      scope: res[0],
-    },
-  };
-}
-
-function colonSpaceValidator(config) {
-  const res = config.string.startsWith(': ');
-  if (!res) {
-    const errorMsg = '": " must exist in the header';
-    return {
-      ...config,
-      errors: config.errors.concat(errorMsg),
-    };
-  }
-
-  return {
-    ...config,
-    string: config.string.slice(2),
-  };
-}
-
-function subjectValidator(config) {
-  const subjectRegex = /^(\w.+)$/;
-
-  const res = subjectRegex.exec(config.string);
-  if (res === null) {
-    const errorMsg = `commit must contain a message`;
-
-    return {
-      ...config,
-      errors: config.errors.concat(errorMsg),
-    };
-  }
-
-  return {
-    ...config,
-    string: config.string.slice(res.index + res[0].length),
-    matches: {
-      ...config.matches,
-      subject: res[0],
-    },
-  };
-}
+const typesValidator = validator(
+  'type',
+  new RegExp(`^${types.join('|')}`),
+  `commit must start with the following types:
+  feat:      A new feature
+  fix:       A bug fix
+  docs:      Documentation only changes
+  style:     Markup-only changes (white-space, formatting, missing semi-colons, etc)
+  refactor:  A code change that neither fixes a bug or adds a feature
+  perf:      A code change that improves performance
+  test:      Adding or updating tests
+  chore:     Build process or auxiliary tool changes
+  ci:        CI related changes`
+);
+const scopeValidator = validator('scope', /\(([\w+])\)/, '');
+const colonSpaceValidator = validator(
+  '',
+  /(: )/,
+  'colon and a space is missing'
+);
+const descriptionValidator = validator(
+  'description',
+  /^(\w.+)$/,
+  `description is missing or has redundant whitespace`
+);
 
 function compose(fns) {
   return (config) => fns.reduce((pre, fn) => fn(pre), config);
@@ -127,24 +101,35 @@ function compose(fns) {
 function lintCommitMessage(message) {
   // Remove right EOL
   const lines = message.trimRight().split(os.EOL);
-  if (lines.length >= 1) {
-    const validator = compose([
-      typesValidator,
-      scopeValidator,
-      colonSpaceValidator,
-      subjectValidator,
-    ]);
+  const headerValidator = compose([
+    typesValidator,
+    scopeValidator,
+    colonSpaceValidator,
+    descriptionValidator,
+  ]);
 
-    const result = validator({
-      string: lines[0],
-      matches: {},
-      errors: [],
-    });
+  switch (lines.length) {
+    case 3:
+    case 2:
+    case 1: {
+      const result = headerValidator({
+        string: lines[0],
+        matches: {},
+        errors: [],
+      });
 
-    if (result.errors.length) {
-      utils.error(result.errors.join(os.EOL));
+      if (result.errors.length) {
+        const errors = [
+          `header follows "<type>[optional scope]: <description>" format`,
+          ...result.errors,
+        ].join(os.EOL);
+
+        report.error(errors);
+      }
+      break;
     }
-  } else if (lines.length === 3) {
+    default:
+      break;
   }
 }
 
@@ -153,25 +138,8 @@ readFileAsync(path.normalize(commitMessagePath))
     const msg = data.toString().trimRight();
     lintCommitMessage(msg);
   })
-  .catch((err) => utils.error(err.message))
+  .catch((err) => report.error(err.message))
   .then(() => {
     console.log('object');
     process.exit(0);
   });
-
-// const rl = readline.createInterface({
-//   input: process.stdin,
-//   output: process.stdout,
-//   terminal: false,
-// });
-
-// const utils = {
-//   error(message, exit = true) {
-//     console.error(message);
-//     if (exit) process.exit(1);
-//   },
-// };
-
-// rl.on('line', (line) => {
-//   console.log(`Received: ${line}`);
-// });

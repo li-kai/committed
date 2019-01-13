@@ -31,6 +31,9 @@ const types = [
   'test',
 ];
 
+function compose(fns) {
+  return (config) => fns.reduce((pre, fn) => fn(pre), config);
+}
 const typesValidator = makeValidator(
   'type',
   new RegExp(`^${types.join('|')}`),
@@ -58,17 +61,11 @@ const descriptionValidator = makeValidator(
 );
 const newLineValidator = makeValidator(
   '',
-  /(\r\n|\r|\n)^$/,
+  /^(\r\n|\r|\n)$/,
   `line must be empty`
 );
 
-function compose(fns) {
-  return (config) => fns.reduce((pre, fn) => fn(pre), config);
-}
-
-function lintCommitMessage(message) {
-  // Remove right EOL
-  const lines = message.trimRight().split(os.EOL);
+function lintHeader(headerConfig) {
   const headerValidator = compose([
     typesValidator,
     scopeValidator,
@@ -76,21 +73,44 @@ function lintCommitMessage(message) {
     descriptionValidator,
   ]);
 
+  const result = headerValidator(headerConfig);
+
+  if (result.errors.length) {
+    result.errors.unshift(
+      `header expects "<type>[optional scope]: <description>" format`
+    );
+  }
+  return result;
+}
+
+function lintSection(bodyConfig, section) {
+  const breakingChange = 'BREAKING CHANGE';
+  const breakingChangeRegex = /^BREAKING CHANGE: \w/;
+
+  const { string } = bodyConfig;
+  if (string.includes(breakingChange) && !breakingChangeRegex.test(string)) {
+    return {
+      ...bodyConfig,
+      errors: bodyConfig.errors.concat(
+        `breaking change must be at start of ${section}`
+      ),
+    };
+  }
+  return bodyConfig;
+}
+
+function lintCommitMessage(message) {
+  // Remove right EOL
+  const lines = message.trimRight().split(os.EOL);
   const errors = [];
 
   if (lines.length >= 1) {
-    const result = headerValidator({
+    const result = lintHeader({
       string: lines[0],
       matches: {},
       errors: [],
     });
-
-    if (result.errors.length) {
-      errors.push(
-        `header expects "<type>[optional scope]: <description>" format`
-      );
-      errors.push(...result.errors);
-    }
+    errors.push(...result.errors);
   }
   if (lines.length >= 2) {
     const result = newLineValidator({
@@ -99,6 +119,39 @@ function lintCommitMessage(message) {
       errors: [],
     });
     errors.push(...result.errors);
+  }
+
+  if (lines.length >= 3) {
+    const bodyAndFooter = lines
+      .slice(2)
+      .join('')
+      .split(os.EOL);
+
+    if (bodyAndFooter.length >= 1) {
+      const result = lintSection(
+        {
+          string: bodyAndFooter[0],
+          matches: {},
+          errors: [],
+        },
+        'body'
+      );
+      errors.push(...result.errors);
+    }
+
+    if (bodyAndFooter.length === 2) {
+      const result = lintSection(
+        {
+          string: bodyAndFooter[1],
+          matches: {},
+          errors: [],
+        },
+        'footer'
+      );
+      errors.push(...result.errors);
+    } else if (bodyAndFooter.length > 2) {
+      errors.push('only body and footer sections are allowed');
+    }
   }
 
   if (errors.length) {

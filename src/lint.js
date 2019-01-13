@@ -4,6 +4,7 @@ const fs = require('fs');
 const os = require('os');
 const util = require('util');
 const path = require('path');
+const { makeValidator } = require('./validation');
 
 const report = {
   error(message, exit = true) {
@@ -36,39 +37,7 @@ const types = [
   'test',
 ];
 
-function validator(key, regex, errorMsg) {
-  return (config) => {
-    const res = regex.exec(config.string);
-    if (res === null) {
-      if (!errorMsg) {
-        return { ...config };
-      }
-
-      return {
-        ...config,
-        errors: config.errors.concat(errorMsg),
-      };
-    }
-
-    const value = res[0];
-    const endIndex = res.index + value.length;
-    const restOfString = config.string.slice(endIndex);
-
-    const result = {
-      ...config,
-      string: restOfString,
-      matches: { ...config.matches },
-    };
-
-    if (key) {
-      result.matches[key] = value;
-    }
-
-    return result;
-  };
-}
-
-const typesValidator = validator(
+const typesValidator = makeValidator(
   'type',
   new RegExp(`^${types.join('|')}`),
   `commit must start with the following types:
@@ -82,18 +51,22 @@ const typesValidator = validator(
   chore:     Build process or auxiliary tool changes
   ci:        CI related changes`
 );
-const scopeValidator = validator('scope', /\(([\w+])\)/, '');
-const colonSpaceValidator = validator(
+const scopeValidator = makeValidator('scope', /\(([\w+])\)/, '');
+const colonSpaceValidator = makeValidator(
   '',
   /(: )/,
   'colon and a space is missing'
 );
-const descriptionValidator = validator(
+const descriptionValidator = makeValidator(
   'description',
   /^(\w.+)$/,
   `description is missing or has redundant whitespace`
 );
-const newLineValidator = validator('', /(\r\n|\r|\n)^$/, `line must be empty`);
+const newLineValidator = makeValidator(
+  '',
+  /(\r\n|\r|\n)^$/,
+  `line must be empty`
+);
 
 function compose(fns) {
   return (config) => fns.reduce((pre, fn) => fn(pre), config);

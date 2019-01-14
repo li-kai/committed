@@ -8,6 +8,9 @@
     ],
     "repository": "git@github.com:ones-io/committed.git",
     "license": "MIT",
+    "engines": {
+        "node": "^10.0.0"
+    },
     "scripts": {
         "build": "node scripts/build.js",
         "test": "jest",

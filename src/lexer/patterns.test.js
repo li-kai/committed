@@ -131,4 +131,91 @@ describe('patterns', () => {
       expect(testType('123(s): ')).toBeNull();
     });
   });
+
+  describe('breakingChange', () => {
+    const testType = getGroups(patterns.BREAKING_CHANGE);
+    const input = 'BREAKING CHANGE';
+    const output = { breakingChange: 'BREAKING CHANGE' };
+
+    it('should match "BREAKING CHANGE"', () => {
+      expect(testType(input)).toEqual(output);
+    });
+
+    it('should not match anything else', () => {
+      expect(testType('BREAKINGCHANGE')).toBeNull();
+      expect(testType('BREAKIN GCHANGE')).toBeNull();
+      expect(testType('BREAKING BAD')).toBeNull();
+      expect(testType('BREAKING change')).toBeNull();
+      expect(testType('breaking change')).toBeNull();
+      expect(testType('')).toBeNull();
+      expect(testType('1')).toBeNull();
+      expect(testType('-')).toBeNull();
+    });
+  });
+
+  describe('content', () => {
+    const testType = getGroups(patterns.CONTENT);
+
+    it('should match paragraphs without two consecutive new lines', () => {
+      expect(testType('a\na\n')).toEqual({
+        content: 'a\na\n',
+      });
+      expect(testType('a\r\nab $\r\n')).toEqual({
+        content: 'a\r\nab $\r\n',
+      });
+      expect(testType('a\t\rab $\r')).toEqual({
+        content: 'a\t\rab $\r',
+      });
+    });
+
+    it('should not match paragraphs following two consecutive new lines', () => {
+      expect(testType('a b c\n\nab $\r')).toEqual({
+        content: 'a b c\n',
+      });
+      expect(testType('a b c\r\n\r\nab $\r')).toEqual({
+        content: 'a b c\r\n',
+      });
+    });
+  });
+
+  describe('body', () => {
+    const testType = getGroups(patterns.BODY);
+
+    it('should match paragraphs without two consecutive new lines', () => {
+      expect(testType('a\na\n')).toEqual({
+        breakingChange: undefined,
+        content: 'a\na\n',
+      });
+      expect(testType('a\r\nab $\r\n')).toEqual({
+        breakingChange: undefined,
+        content: 'a\r\nab $\r\n',
+      });
+      expect(testType('BREAKING CHANGE: a\rab $\r')).toEqual({
+        breakingChange: 'BREAKING CHANGE',
+        content: 'a\rab $\r',
+      });
+    });
+
+    it('should not match paragraphs following two consecutive new lines', () => {
+      expect(testType('BREAKING CHANGE: a b c\n\nab $\r')).toEqual({
+        breakingChange: 'BREAKING CHANGE',
+        content: 'a b c\n',
+      });
+      expect(testType('a b c\r\n\r\nab $\r')).toEqual({
+        content: 'a b c\r\n',
+      });
+    });
+
+    it('should not match invalid breaking change', () => {
+      expect(testType('BREAKING CHANGE:a b c\n\nab $\r')).toEqual({
+        breakingChange: undefined,
+        content: 'BREAKING CHANGE:a b c\n',
+      });
+    });
+
+    it('should not match invalid bodies', () => {
+      expect(testType('')).toBeNull();
+      expect(testType('\n')).toBeNull();
+    });
+  });
 });

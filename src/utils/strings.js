@@ -1,3 +1,5 @@
+const commitTypes = require('../utils/commit-types');
+
 const gitNotFoundMessage = `
 program “git” is not installed or not in the PATH
 
@@ -12,9 +14,15 @@ const installedHook = (sourceHook, targetHook) =>
 const skippingHook = (hookPath) =>
   `skipping existing user installed hook at ${hookPath}`;
 
+const typeTokenizeError = `commit must start with the following types:
+${Object.entries(commitTypes.typeDescriptions)
+  .map(([type, desc]) => `${type}: `.padEnd(10) + desc)
+  .join('')}`;
+
 module.exports = {
   gitNotFoundMessage,
   commitedHeader,
   installedHook,
   skippingHook,
+  typeTokenizeError,
 };

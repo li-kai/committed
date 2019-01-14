@@ -1,6 +1,6 @@
-function makeValidator(key, regex, errorMsg) {
+function makeValidator({ name, pattern, errorMsg }) {
   return (config) => {
-    const res = regex.exec(config.string);
+    const res = pattern.exec(config.string);
     if (res === null) {
       if (!errorMsg) {
         return { ...config };
@@ -22,8 +22,8 @@ function makeValidator(key, regex, errorMsg) {
       matches: { ...config.matches },
     };
 
-    if (key) {
-      result.matches[key] = value;
+    if (name) {
+      result.matches[name] = value;
     }
 
     return result;

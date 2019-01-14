@@ -6,6 +6,8 @@ const util = require('util');
 const path = require('path');
 const { makeValidator } = require('./validation');
 const report = require('./utils/report');
+const commitTypes = require('./utils/commit-types');
+const strings = require('./utils/strings');
 
 const args = process.argv;
 
@@ -17,53 +19,34 @@ const commitMessagePath = args[2];
 
 const readFileAsync = util.promisify(fs.readFile);
 
-const types = [
-  'build',
-  'ci',
-  'chore',
-  'docs',
-  'feat',
-  'fix',
-  'perf',
-  'refactor',
-  'revert',
-  'style',
-  'test',
-];
-
 function compose(fns) {
   return (config) => fns.reduce((pre, fn) => fn(pre), config);
 }
-const typesValidator = makeValidator(
-  'type',
-  new RegExp(`^${types.join('|')}`),
-  `commit must start with the following types:
-  feat:      A new feature
-  fix:       A bug fix
-  docs:      Documentation only changes
-  style:     Markup-only changes (white-space, formatting, missing semi-colons, etc)
-  refactor:  A code change that neither fixes a bug or adds a feature
-  perf:      A code change that improves performance
-  test:      Adding or updating tests
-  chore:     Build process or auxiliary tool changes
-  ci:        CI related changes`
-);
-const scopeValidator = makeValidator('scope', /\(([\w+])\)/, '');
-const colonSpaceValidator = makeValidator(
-  '',
-  /(: )/,
-  'colon and a space is missing'
-);
-const descriptionValidator = makeValidator(
-  'description',
-  /^(\w.+)$/,
-  `description is missing or has redundant whitespace`
-);
-const newLineValidator = makeValidator(
-  '',
-  /^(\r\n|\r|\n)$/,
-  `line must be empty`
-);
+const typesValidator = makeValidator({
+  name: 'type',
+  pattern: new RegExp(`^${commitTypes.types.join('|')}`),
+  errorMsg: strings.typeTokenizeError,
+});
+const scopeValidator = makeValidator({
+  name: 'scope',
+  pattern: /\(([\w+])\)/,
+  errorMsg: '',
+});
+const colonSpaceValidator = makeValidator({
+  name: '',
+  pattern: /(: )/,
+  errorMsg: 'colon and a space is missing',
+});
+const descriptionValidator = makeValidator({
+  name: 'description',
+  pattern: /^(\w.+)$/,
+  errorMsg: `description is missing or has redundant whitespace`,
+});
+const newLineValidator = makeValidator({
+  name: '',
+  pattern: /^(\r\n|\r|\n)$/,
+  errorMsg: `line must be empty`,
+});
 
 function lintHeader(headerConfig) {
   const headerValidator = compose([

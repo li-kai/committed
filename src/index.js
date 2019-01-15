@@ -59,6 +59,11 @@ async function linkHook(sourceHook, targetHook) {
 
 async function linkFiles() {
   const gitDir = await findUp('.git');
+
+  if (gitDir == null) {
+    report.error(strings.gitRepoNotFoundMessage);
+  }
+
   const hooksDir = path.join(gitDir, 'hooks');
   // Ensure folder exists
   afs.mkdir(hooksDir).catch(() => {});

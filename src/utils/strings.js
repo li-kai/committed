@@ -6,6 +6,8 @@ program “git” is not installed or not in the PATH
 using windows? try https://stackoverflow.com/a/4493004/4819795
 `.trim();
 
+const gitRepoNotFoundMessage = `git repository not found, try running 'git init' first?`;
+
 const commitedHeader = '// @ones-io/committed';
 
 const installedHook = (sourceHook, targetHook) =>
@@ -21,6 +23,7 @@ ${Object.entries(commitTypes.typeDescriptions)
 
 module.exports = {
   gitNotFoundMessage,
+  gitRepoNotFoundMessage,
   commitedHeader,
   installedHook,
   skippingHook,

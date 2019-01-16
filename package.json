@@ -1,11 +1,14 @@
 {
-    "name": "@ones-io/committed",
+    "name": "@ones/committed",
     "version": "0.1.0",
     "description": "A coventional commits workflow tool",
     "main": "src/index.js",
     "files": [
-        "bin"
+        "src"
     ],
+    "bin": {
+        "committed": "./src/index.js"
+    },
     "repository": "git@github.com:ones-io/committed.git",
     "license": "MIT",
     "engines": {

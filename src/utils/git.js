@@ -38,10 +38,28 @@ function getFilesFromHead() {
   );
 }
 
-function getCommitsFromHead() {
-  return gitCmd(['ls-tree', '-r', 'HEAD', '--name-only']).then((str) =>
-    str.split(os.EOL)
-  );
+const COMMIT_REGEX = /commit (?<hash>\w+)\n(?<author>.+)\n(?<ts>\d+)\n(?<content>[\S\s]+)\n/;
+function getCommitsFromRef(fromHash) {
+  return gitCmd([
+    'rev-list',
+    '--first-parent',
+    `--format=%an%n%at%n%B%x00`,
+    fromHash ? `${fromHash}..HEAD` : 'HEAD',
+  ]).then((str) => {
+    const commits = [];
+
+    str
+      .replace(os.EOL, '\n')
+      .split('\x00\n')
+      .forEach((commit) => {
+        const result = COMMIT_REGEX.exec(commit);
+        if (!result) return;
+
+        commits.push(result.groups);
+      });
+
+    return commits;
+  });
 }
 
 const TAG_REGEX = /(?<hash>\w+) refs\/tags\/(?<tag>[\S]+)\^{}/;
@@ -64,6 +82,6 @@ module.exports = {
   getGitRootPath,
   getGitHooksPath,
   getFilesFromHead,
-  getCommitsFromHead,
+  getCommitsFromRef,
   getAllTags,
 };

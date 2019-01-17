@@ -31,6 +31,17 @@ describe('git', () => {
     );
   });
 
+  it('should return all commits', async () => {
+    await expect(git.getCommitsFromRef()).resolves.toContainEqual(
+      expect.objectContaining({
+        author: 'Li Kai',
+        hash: '277f77bf87c950cfae6f2eaf917ee191aef61742',
+        ts: '1547269128',
+        content: 'chore: add essential config files',
+      })
+    );
+  });
+
   it('should return all tags', async () => {
     await expect(git.getAllTags()).resolves.toContainEqual({
       hash: 'a6fd67344a3090d667fc171688dcd01f334c8f5f',

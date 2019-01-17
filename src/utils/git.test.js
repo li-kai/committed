@@ -30,4 +30,11 @@ describe('git', () => {
       ])
     );
   });
+
+  it('should return all tags', async () => {
+    await expect(git.getAllTags()).resolves.toContainEqual({
+      hash: 'a6fd67344a3090d667fc171688dcd01f334c8f5f',
+      tag: 'v0.0.0',
+    });
+  });
 });

@@ -32,20 +32,45 @@ describe('git', () => {
   });
 
   it('should return all commits', async () => {
-    await expect(git.getCommitsFromRef()).resolves.toContainEqual(
-      expect.objectContaining({
-        author: 'Li Kai',
-        hash: '277f77bf87c950cfae6f2eaf917ee191aef61742',
-        ts: '1547269128',
-        content: 'chore: add essential config files',
-      })
-    );
+    expect.assertions(1);
+    const commits = await git.getCommitsFromRef();
+    expect(commits.slice(-3)).toMatchInlineSnapshot(`
+Array [
+  Object {
+    "author": "Li Kai",
+    "content": "chore: add style config",
+    "hash": "03216e2b64939c8182b4d83644257d4c3d2acaa4",
+    "ts": "1547280107",
+  },
+  Object {
+    "author": "Li Kai",
+    "content": "chore: add MIT license",
+    "hash": "75957492161e55efff8b7bcad8685f6a689cff4d",
+    "ts": "1547269242",
+  },
+  Object {
+    "author": "Li Kai",
+    "content": "chore: add essential config files",
+    "hash": "277f77bf87c950cfae6f2eaf917ee191aef61742",
+    "ts": "1547269128",
+  },
+]
+`);
   });
 
   it('should return all tags', async () => {
-    await expect(git.getAllTags()).resolves.toContainEqual({
-      hash: 'a6fd67344a3090d667fc171688dcd01f334c8f5f',
-      tag: 'v0.0.0',
-    });
+    expect.assertions(1);
+    const tags = await git.getAllTags();
+    expect(tags.slice(-3)).toMatchInlineSnapshot(`
+Array [
+  Object {
+    "major": "0",
+    "minor": "0",
+    "name": undefined,
+    "patch": "0",
+    "prerelease": undefined,
+  },
+]
+`);
   });
 });

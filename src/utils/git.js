@@ -22,60 +22,56 @@ function getDotGitPath() {
   return gitCmd(['rev-parse', '--git-dir']);
 }
 
-function getGitHooksPath() {
-  return getDotGitPath().then((dotGitPath) =>
-    path.join(process.cwd(), dotGitPath, 'hooks')
-  );
+async function getGitHooksPath() {
+  const dotGitPath = await getDotGitPath();
+  return path.join(process.cwd(), dotGitPath, 'hooks');
 }
 
 function getGitRootPath() {
   return gitCmd(['rev-parse', '--show-toplevel']);
 }
 
-function getFilesFromHead() {
-  return gitCmd(['ls-tree', '-r', 'HEAD', '--name-only']).then((str) =>
-    str.split(os.EOL)
-  );
+async function getFilesFromHead() {
+  const str = await gitCmd(['ls-tree', '-r', 'HEAD', '--name-only']);
+  return str.split(os.EOL);
 }
 
 const COMMIT_REGEX = /commit (?<hash>\w+)\n(?<author>.+)\n(?<ts>\d+)\n(?<content>[\S\s]+)\n/;
-function getCommitsFromRef(fromHash) {
-  return gitCmd([
+async function getCommitsFromRef(fromHash) {
+  const str = await gitCmd([
     'rev-list',
     '--first-parent',
     `--format=%an%n%at%n%B%x00`,
     fromHash ? `${fromHash}..HEAD` : 'HEAD',
-  ]).then((str) => {
-    const commits = [];
+  ]);
+  const commits = [];
 
-    str
-      .replace(os.EOL, '\n')
-      .split('\x00\n')
-      .forEach((commit) => {
-        const result = COMMIT_REGEX.exec(commit);
-        if (!result) return;
+  str
+    .replace(os.EOL, '\n')
+    .split('\x00\n')
+    .forEach((commit) => {
+      const result = COMMIT_REGEX.exec(commit);
+      if (!result) return;
 
-        commits.push(result.groups);
-      });
+      commits.push(result.groups);
+    });
 
-    return commits;
-  });
+  return commits;
 }
 
 const TAG_REGEX = /(?<hash>\w+) refs\/tags\/(?<tag>[\S]+)\^{}/;
-function getAllTags() {
-  return gitCmd(['show-ref', '-d', '--tags']).then((str) => {
-    const lines = [];
+async function getAllTags() {
+  const str = await gitCmd(['show-ref', '-d', '--tags']);
+  const lines = [];
 
-    str.split(os.EOL).forEach((line) => {
-      const result = TAG_REGEX.exec(line);
-      if (!result) return;
+  str.split(os.EOL).forEach((line) => {
+    const result = TAG_REGEX.exec(line);
+    if (!result) return;
 
-      lines.push(result.groups);
-    });
-
-    return lines;
+    lines.push(result.groups);
   });
+
+  return lines;
 }
 
 module.exports = {

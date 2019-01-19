@@ -1,3 +1,4 @@
+// tslint:disable:no-implicit-dependencies
 import { vol } from 'memfs';
 import readdirRecursive from './readdir-recursive';
 

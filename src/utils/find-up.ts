@@ -9,8 +9,8 @@ import afs from './afs';
  */
 
 type Options = {
-  cwd?: string
-}
+  cwd?: string;
+};
 function findUp(filename: string, options?: Options) {
   const startDir = path.resolve((options && options.cwd) || '');
 

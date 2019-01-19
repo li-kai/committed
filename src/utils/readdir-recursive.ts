@@ -21,8 +21,7 @@ async function readdirRecursive(startPath: string) {
         continue;
       }
 
-      for (let i = 0; i < contents.length; i++) {
-        const content = contents[i];
+      for (const content of contents) {
         const contentPath = path.join(current, content.name);
         if (NODE_PATHS.test(content.name)) {
           continue;

@@ -2,13 +2,13 @@ export type Config = {
   string: string;
   matches: { [key: string]: string };
   errors: string[];
-}
+};
 
 type ValidatorArgs = {
   name: string;
   pattern: RegExp;
   errorMsg: string;
-}
+};
 function makeValidator({ name, pattern, errorMsg }: ValidatorArgs) {
   return (config: Config) => {
     const res = pattern.exec(config.string);

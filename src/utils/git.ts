@@ -1,6 +1,7 @@
 import childProcess from 'child_process';
 import os from 'os';
 import path from 'path';
+import { ICommitMeta, ISemanticVersionTag } from '../types';
 
 /**
  * E2E tests for git, because we want to execute against
@@ -37,14 +38,14 @@ async function getFilesFromHead() {
 }
 
 const COMMIT_REGEX = /commit (?<hash>\w+)\n(?<author>.+)\n(?<ts>\d+)\n(?<content>[\S\s]+)\n/;
-async function getCommitsFromRef(fromHash?: string) {
+async function getCommitsFromRef(fromHash?: string): Promise<ICommitMeta[]> {
   const str = await gitCmd([
     'rev-list',
     '--first-parent',
     `--format=%an%n%at%n%B%x00`,
     fromHash ? `${fromHash}..HEAD` : 'HEAD',
   ]);
-  const commits: Array<{ [key: string]: string }> = [];
+  const commits: ICommitMeta[] = [];
 
   str
     .replace(os.EOL, '\n')
@@ -59,7 +60,12 @@ async function getCommitsFromRef(fromHash?: string) {
         return;
       }
 
-      commits.push(groups);
+      commits.push({
+        hash: groups.hash,
+        author: groups.author,
+        ts: groups.ts,
+        content: groups.content,
+      });
     });
 
   return commits;
@@ -79,15 +85,7 @@ const SEMANTIC_VERSIONING_REGEX = new RegExp(
   }`
 );
 
-export interface SemanticVersion {
-  name: string;
-  major: number;
-  minor: number;
-  patch: number;
-  prerelease: string;
-}
-
-function getSemanticVersionFromString(str: string): SemanticVersion | null {
+function getSemanticVersionFromString(str: string): ISemanticVersionTag | null {
   const versionMatch = VERSION_REGEX.exec(str);
   if (!versionMatch || !versionMatch.groups) {
     return null;
@@ -99,16 +97,18 @@ function getSemanticVersionFromString(str: string): SemanticVersion | null {
   }
   const semanticGroups = semanticMatch.groups;
 
-  const semanticVersion = {} as SemanticVersion;
-  semanticVersion.name = versionGroups.name;
-  semanticVersion.major = parseInt(semanticGroups.major, 10);
-  semanticVersion.minor = parseInt(semanticGroups.minor, 10);
-  semanticVersion.patch = parseInt(semanticGroups.patch, 10);
-  semanticVersion.prerelease = semanticGroups.prerelease;
+  const semanticVersion: ISemanticVersionTag = {
+    name: versionGroups.name,
+    versionStr: versionGroups.version,
+    major: parseInt(semanticGroups.major, 10),
+    minor: parseInt(semanticGroups.minor, 10),
+    patch: parseInt(semanticGroups.patch, 10),
+    prerelease: semanticGroups.prerelease,
+  };
   return semanticVersion;
 }
 
-async function getAllTags(): Promise<SemanticVersion[]> {
+async function getAllTags(): Promise<ISemanticVersionTag[]> {
   // https://stackoverflow.com/a/52680984/4819795
   const str = await gitCmd([
     '-c',
@@ -118,7 +118,7 @@ async function getAllTags(): Promise<SemanticVersion[]> {
     '--format=%(refname:lstrip=2)',
     'refs/tags',
   ]);
-  const lines: SemanticVersion[] = [];
+  const lines: ISemanticVersionTag[] = [];
 
   str.split(os.EOL).forEach((line) => {
     const versionResult = getSemanticVersionFromString(line);

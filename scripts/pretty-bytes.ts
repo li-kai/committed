@@ -8,53 +8,47 @@ Formats the given number using `Number#toLocaleString`.
 - If locale is true, the system default locale is used for translation.
 - If no value for locale is specified, the number is returned unmodified.
 */
-const toLocaleString = (number: number, locale?: string | boolean): string => {
+const toLocaleString = (num: number, locale?: string | boolean): string => {
   let result;
   if (typeof locale === 'string') {
-    result = number.toLocaleString(locale);
+    result = num.toLocaleString(locale);
   } else if (locale === true) {
-    result = number.toLocaleString();
+    result = num.toLocaleString();
   } else {
-    result = number.toString();
+    result = num.toString();
   }
 
   return result;
 };
 
-type Options = { signed?: boolean, locale?: string | boolean }
-export default (number: number, options: Options = {}) => {
-  if (!Number.isFinite(number)) {
-    throw new TypeError(
-      `Expected a finite number, got ${typeof number}: ${number}`
-    );
+type Options = { signed?: boolean; locale?: string | boolean };
+export default (num: number, options: Options = {}) => {
+  if (!Number.isFinite(num)) {
+    throw new TypeError(`Expected a finite number, got ${typeof num}: ${num}`);
   }
 
   const opts = options;
 
-  if (opts.signed && number === 0) {
+  if (opts.signed && num === 0) {
     return ' 0 B';
   }
 
-  const isNegative = number < 0;
+  const isNegative = num < 0;
   // eslint-disable-next-line no-nested-ternary
   const prefix = isNegative ? '-' : opts.signed ? '+' : '';
 
   if (isNegative) {
-    number = -number;
+    num = -num;
   }
 
-  if (number < 1) {
-    const numberString = toLocaleString(number, opts.locale);
-    return `${prefix + numberString} B`;
+  if (num < 1) {
+    const numString = toLocaleString(num, opts.locale);
+    return `${prefix + numString} B`;
   }
 
-  const exponent = Math.min(
-    Math.floor(Math.log10(number) / 3),
-    UNITS.length - 1
-  );
-  // eslint-disable-next-line no-restricted-properties
-  number = Number((number / Math.pow(1000, exponent)).toPrecision(3));
-  const numberString = toLocaleString(number, opts.locale);
+  const exponent = Math.min(Math.floor(Math.log10(num) / 3), UNITS.length - 1);
+  num = Number((num / Math.pow(1000, exponent)).toPrecision(3));
+  const numberString = toLocaleString(num, opts.locale);
 
   const unit = UNITS[exponent];
 

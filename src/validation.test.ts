@@ -1,8 +1,8 @@
 import { Config, makeValidator } from './validation';
 
-function getConfig(string: string): Config {
+function getConfig(str: string): Config {
   return {
-    string,
+    string: str,
     matches: {},
     errors: [],
   };

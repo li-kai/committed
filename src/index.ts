@@ -92,7 +92,7 @@ async function findPkgJson() {
         name: pkgJson.name,
         version: pkgJson.version,
         private: pkgJson.private === true,
-        previousVersion: { name: pkgJson.name, ...initialVersion },
+        previousTag: { name: pkgJson.name, ...initialVersion },
       });
     })
   );
@@ -103,7 +103,7 @@ async function findPkgJson() {
   const isMonoRepo = repoMetas.length > 1;
 
   if (!isMonoRepo) {
-    repoMetas[0].previousVersion.name = undefined;
+    repoMetas[0].previousTag.name = undefined;
   }
 
   const existingTags = await gitUtils.getAllTags();
@@ -124,35 +124,33 @@ async function findPkgJson() {
       }
 
       const data = nameToData[tagName];
-      if (!data.previousVersion) {
-        nameToData[tagName].previousVersion = tag;
+      if (!data.previousTag) {
+        nameToData[tagName].previousTag = tag;
       }
     });
   } else if (existingTags.length > 0) {
     const repoMeta = repoMetas[0];
     const tag = existingTags[0];
-    nameToData[repoMeta.name].previousVersion = tag;
+    nameToData[repoMeta.name].previousTag = tag;
   }
-  console.log(nameToData);
 
   await Promise.all(
     Object.values(nameToData).map(async (data) => {
-      const previousVersion = data.previousVersion!;
-      let previousVersionString;
-      if (previousVersion && previousVersion.versionStr) {
-        previousVersionString = previousVersion.versionStr;
+      const previousTag = data.previousTag!;
+      let previousTagString;
+      if (previousTag && previousTag.versionStr) {
+        previousTagString = previousTag.versionStr;
       }
-      const commits = await gitUtils.getCommitsFromRef(previousVersionString);
+      const commits = await gitUtils.getCommitsFromRef(previousTagString);
       const parsedCommits = commits.map((commit) =>
         semanticVersion.parseCommit(commit.content)
       );
 
       const maxVersionBump = semanticVersion.getVersionBumpType(parsedCommits);
       const newVersion = semanticVersion.increaseVersionBump(
-        previousVersion,
+        previousTag,
         maxVersionBump
       );
-      console.log(newVersion);
     })
   );
 }

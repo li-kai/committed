@@ -33,5 +33,5 @@ export interface IRepoMeta {
   name: string;
   version: string;
   private: boolean;
-  previousVersion: ISemanticVersionTag;
+  previousTag: ISemanticVersionTag;
 }

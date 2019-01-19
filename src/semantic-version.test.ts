@@ -129,10 +129,19 @@ describe('semanticVersion.getVersionBumpType', () => {
   });
 
   describe('semanticVersion.increaseVersionBump', () => {
-    const version = { major: 0, minor: 0, patch: 0 };
+    const version = {
+      name: undefined,
+      versionStr: '',
+      major: 0,
+      minor: 0,
+      patch: 0,
+      prerelease: undefined,
+    };
+
     it('should increase major version accordingly', () => {
       expect(increaseVersionBump(version, major)).toEqual({
         ...version,
+        versionStr: '1.0.0',
         major: 1,
       });
     });
@@ -140,6 +149,7 @@ describe('semanticVersion.getVersionBumpType', () => {
     it('should increase minor version accordingly', () => {
       expect(increaseVersionBump(version, minor)).toEqual({
         ...version,
+        versionStr: '0.1.0',
         minor: 1,
       });
     });
@@ -147,6 +157,7 @@ describe('semanticVersion.getVersionBumpType', () => {
     it('should increase patch version accordingly', () => {
       expect(increaseVersionBump(version, patch)).toEqual({
         ...version,
+        versionStr: '0.0.1',
         patch: 1,
       });
     });

@@ -1,6 +1,11 @@
 import os from 'os';
 import patterns from './patterns';
-import { ICommit, IProposedVersionBump, VersionBump } from './types';
+import {
+  ICommit,
+  IProposedVersionBump,
+  ISemanticVersionTag,
+  VersionBump,
+} from './types';
 
 function parseCommit(commitStr: string): ICommit {
   const lines = commitStr.replace(os.EOL, '\n').split('\n');
@@ -74,19 +79,14 @@ function getVersionBumpType(commits: IProposedVersionBump[]): VersionBump {
   return maxVersionBump;
 }
 
-interface IVersion {
-  major: number;
-  minor: number;
-  patch: number;
-}
 /**
  * Returns the version that results from this bump type
  */
 function increaseVersionBump(
-  previousVersion: IVersion,
+  previousTag: ISemanticVersionTag,
   versionBumpType: VersionBump
 ) {
-  const newVersion = { ...previousVersion };
+  const newVersion = { ...previousTag };
   if (versionBumpType === 'major') {
     newVersion.major += 1;
   } else if (versionBumpType === 'minor') {
@@ -94,6 +94,11 @@ function increaseVersionBump(
   } else if (versionBumpType === 'patch') {
     newVersion.patch += 1;
   }
+
+  const { major, minor, patch, prerelease } = newVersion;
+  const prereleaseStr = prerelease ? `-${prerelease}` : '';
+  newVersion.versionStr = `${major}.${minor}.${patch}${prereleaseStr}`;
+
   return newVersion;
 }
 

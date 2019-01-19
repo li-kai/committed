@@ -61,15 +61,16 @@ async function getCommitsFromRef(fromHash) {
 
 // Follows yarn/npm specific version syntax e.g. pkg@1.12.0
 const NAME_REGEX = /(?:(?<name>.+)@)?/;
+const VERSION_REGEX = new RegExp(`${NAME_REGEX.source}(?<version>.+)`);
 // https://semver.org/
 const MAJOR_REGEX = /(?<major>\d+)/;
 const MINOR_REGEX = /(?<minor>\d+)/;
 const PATCH_REGEX = /(?<patch>\d+)/;
 const PRERELEASE_REGEX = /(?:-(?<prerelease>[\w.]+))?/;
 const SEMANTIC_VERSIONING_REGEX = new RegExp(
-  `${NAME_REGEX.source}${MAJOR_REGEX.source}.${MINOR_REGEX.source}.${
-    PATCH_REGEX.source
-  }${PRERELEASE_REGEX.source}`
+  `${MAJOR_REGEX.source}.${MINOR_REGEX.source}.${PATCH_REGEX.source}${
+    PRERELEASE_REGEX.source
+  }`
 );
 async function getAllTags() {
   // https://stackoverflow.com/a/52680984/4819795
@@ -84,10 +85,12 @@ async function getAllTags() {
   const lines = [];
 
   str.split(os.EOL).forEach((line) => {
-    const result = SEMANTIC_VERSIONING_REGEX.exec(line);
+    const versionResult = VERSION_REGEX.exec(line);
+    if (!versionResult) return;
+    const result = SEMANTIC_VERSIONING_REGEX.exec(versionResult.groups.version);
     if (!result) return;
 
-    lines.push(result.groups);
+    lines.push({ ...versionResult.groups, ...result.groups });
   });
 
   return lines;

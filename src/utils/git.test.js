@@ -69,6 +69,7 @@ Array [
     "name": undefined,
     "patch": "0",
     "prerelease": undefined,
+    "version": "0.0.0",
   },
 ]
 `);

@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 const childProcess = require('child_process');
 const path = require('path');
-const EventEmitter = require('events');
+const gitUtils = require('./utils/git');
 const afs = require('./utils/afs');
 const findUp = require('./utils/find-up');
 const pathExists = require('./utils/path-exists');
 const isCommittedHook = require('./utils/is-committed-hook');
-const readdirRecursive = require('./utils/readdir-recursive');
 const report = require('./utils/report');
 const strings = require('./utils/strings');
 
@@ -58,30 +57,67 @@ async function linkHook(sourceHook, targetHook) {
     }
   }
 }
-function stdinLineByLine(stdin) {
-  const emitter = new EventEmitter();
-  let buff = '';
 
-  stdin
-    .on('data', (data) => {
-      buff += data;
-      const lines = buff.split(/[\r\n|\n]/);
-      buff = lines.pop();
-      lines.forEach((line) => emitter.emit('line', line));
+async function findPkgJson() {
+  const PACKAGE_JSON_REGEX = /package\.json$/;
+  const filePaths = await gitUtils.getFilesFromHead();
+
+  const pkgJsonPaths = filePaths.filter((file) =>
+    PACKAGE_JSON_REGEX.test(file)
+  );
+  const repoMetas = [];
+  await Promise.all(
+    pkgJsonPaths.map(async (filePath) => {
+      const fileContent = await afs.readFile(filePath, 'utf8');
+      const dir = path.dirname(filePath);
+      const pkgJson = JSON.parse(fileContent);
+
+      if (!pkgJson.name) {
+        report.error('no package name found');
+      }
+
+      repoMetas.push({
+        dir,
+        name: pkgJson.name,
+        version: pkgJson.version,
+        private: pkgJson.private === true,
+      });
     })
-    .on('end', () => {
-      if (buff.length > 0) emitter.emit('line', buff);
+  );
+
+  if (repoMetas.length === 0) {
+    report.error('no package.json file found');
+  }
+
+  const existingTags = await gitUtils.getAllTags();
+  const isMonoRepo = repoMetas.length > 1;
+
+  const nameToData = {};
+  repoMetas.forEach((repoMeta) => {
+    nameToData[repoMeta.name] = repoMeta;
+  });
+  if (isMonoRepo) {
+    existingTags.forEach((tag) => {
+      const data = nameToData[tag.name];
+      if (!data) {
+        nameToData[tag.name] = { previousVersion: tag };
+      } else if (!data.previousVersion) {
+        nameToData[tag.name].previousVersion = tag;
+      }
     });
+  } else if (existingTags.length > 0) {
+    const repoMeta = repoMetas[0];
+    const tag = existingTags[0];
+    nameToData[repoMeta.name].previousVersion = tag;
+  }
 
-  return emitter;
-}
-
-async function findPkgJson(rootPath) {
-  const contents = await readdirRecursive(rootPath);
-
-  const gitEmitter = childProcess.spawn('git', ['rev-list', '--all']);
-  const stdin = stdinLineByLine(gitEmitter.stdout);
-  stdin.on('line', console.log);
+  await Promise.all(
+    Object.values(nameToData).map(async (data) => {
+      const { previousVersion } = data;
+      const commits = await gitUtils.getCommitsFromRef(previousVersion.version);
+      console.log(commits);
+    })
+  );
 }
 
 async function linkFiles() {

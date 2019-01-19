@@ -1,7 +1,20 @@
-const os = require('os');
-const patterns = require('./patterns');
+import os from 'os';
+import patterns from './patterns';
 
-function parseCommit(commitStr) {
+type VersionBump = 'major' | 'minor' | 'patch';
+
+interface IProposedVersionBump {
+  proposedVersionBump: VersionBump;
+}
+interface ICommit extends IProposedVersionBump {
+  type: string | undefined;
+  scope: string | undefined;
+  description: string | undefined;
+  body: string | undefined;
+  footer: string | undefined;
+}
+
+function parseCommit(commitStr: string): ICommit {
   const lines = commitStr.replace(os.EOL, '\n').split('\n');
 
   let type;
@@ -9,11 +22,13 @@ function parseCommit(commitStr) {
   let description;
   let body;
   let footer;
-  let proposedVersionBump = 'patch';
+  let proposedVersionBump: VersionBump = 'patch';
 
   if (lines.length >= 1) {
     const header = lines[0];
     const match = patterns.HEADER.exec(header);
+
+    if (!match || !match.groups) throw new Error('No header');
 
     type = match.groups.type;
     scope = match.groups.scope;
@@ -27,6 +42,9 @@ function parseCommit(commitStr) {
   if (lines.length >= 3) {
     const content = lines[2];
     const match = patterns.BODY.exec(content);
+
+    if (!match || !match.groups) throw new Error('No content');
+
     body = match.groups.content;
     if (match.groups.breakingChange) {
       proposedVersionBump = 'major';
@@ -36,6 +54,9 @@ function parseCommit(commitStr) {
   if (lines.length >= 5) {
     const content = lines[4];
     const match = patterns.BODY.exec(content);
+
+    if (!match || !match.groups) throw new Error('No content');
+
     footer = match.groups.content;
     if (match.groups.breakingChange) {
       proposedVersionBump = 'major';
@@ -55,8 +76,8 @@ function parseCommit(commitStr) {
 /**
  * Returns the largest version type recommended in that range
  */
-function getVersionBumpType(commits) {
-  let maxVersionBump = 'patch';
+function getVersionBumpType(commits: IProposedVersionBump[]): VersionBump {
+  let maxVersionBump: VersionBump = 'patch';
   for (let i = 0; i < commits.length; i += 1) {
     const commit = commits[i];
     if (commit.proposedVersionBump === 'major') {
@@ -69,10 +90,15 @@ function getVersionBumpType(commits) {
   return maxVersionBump;
 }
 
+interface IVersion {
+  major: number;
+  minor: number;
+  patch: number;
+}
 /**
  * Returns the version that results from this bump type
  */
-function increaseVersionBump(previousVersion, versionBumpType) {
+function increaseVersionBump(previousVersion: IVersion, versionBumpType: VersionBump) {
   const newVersion = { ...previousVersion };
   if (versionBumpType === 'major') {
     newVersion.major += 1;
@@ -84,7 +110,7 @@ function increaseVersionBump(previousVersion, versionBumpType) {
   return newVersion;
 }
 
-module.exports = {
+export default {
   parseCommit,
   getVersionBumpType,
   increaseVersionBump,

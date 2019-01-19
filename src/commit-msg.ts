@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 // @ones-io/committed
-const fs = require('fs');
-const os = require('os');
-const util = require('util');
-const path = require('path');
-const { makeValidator } = require('./validation');
-const report = require('./utils/report');
-const commitTypes = require('./utils/commit-types');
-const strings = require('./utils/strings');
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import util from 'util';
+import commitTypes from './utils/commit-types';
+import report from './utils/report';
+import * as strings from './utils/strings';
+import { Config, makeValidator } from './validation';
 
 const args = process.argv;
 
@@ -19,36 +19,37 @@ const commitMessagePath = args[2];
 
 const readFileAsync = util.promisify(fs.readFile);
 
-function compose(fns) {
-  return (config) => fns.reduce((pre, fn) => fn(pre), config);
+function compose<T>(fns: Array<((input: T) => T)>) {
+  return (config: T) => fns.reduce((pre, fn) => fn(pre), config);
 }
+
 const typesValidator = makeValidator({
+  errorMsg: strings.typeTokenizeError,
   name: 'type',
   pattern: new RegExp(`^${commitTypes.types.join('|')}`),
-  errorMsg: strings.typeTokenizeError,
 });
 const scopeValidator = makeValidator({
+  errorMsg: '',
   name: 'scope',
   pattern: /\(([\w+])\)/,
-  errorMsg: '',
 });
 const colonSpaceValidator = makeValidator({
+  errorMsg: 'colon and a space is missing',
   name: '',
   pattern: /(: )/,
-  errorMsg: 'colon and a space is missing',
 });
 const descriptionValidator = makeValidator({
+  errorMsg: `description is missing or has redundant whitespace`,
   name: 'description',
   pattern: /^(\w.+)$/,
-  errorMsg: `description is missing or has redundant whitespace`,
 });
 const newLineValidator = makeValidator({
+  errorMsg: `line must be empty`,
   name: '',
   pattern: /^(\r\n|\r|\n)$/,
-  errorMsg: `line must be empty`,
 });
 
-function lintHeader(headerConfig) {
+function lintHeader(headerConfig: Config) {
   const headerValidator = compose([
     typesValidator,
     scopeValidator,
@@ -66,12 +67,12 @@ function lintHeader(headerConfig) {
   return result;
 }
 
-function lintSection(bodyConfig, section) {
+function lintSection(bodyConfig: Config, section: string) {
   const breakingChange = 'BREAKING CHANGE';
   const breakingChangeRegex = /^BREAKING CHANGE: \w/;
 
-  const { string } = bodyConfig;
-  if (string.includes(breakingChange) && !breakingChangeRegex.test(string)) {
+  const { string: str } = bodyConfig;
+  if (str.includes(breakingChange) && !breakingChangeRegex.test(str)) {
     return {
       ...bodyConfig,
       errors: bodyConfig.errors.concat(
@@ -82,24 +83,24 @@ function lintSection(bodyConfig, section) {
   return bodyConfig;
 }
 
-function lintCommitMessage(message) {
+function lintCommitMessage(message: string) {
   // Remove right EOL
   const lines = message.trimRight().split(os.EOL);
   const errors = [];
 
   if (lines.length >= 1) {
     const result = lintHeader({
-      string: lines[0],
-      matches: {},
       errors: [],
+      matches: {},
+      string: lines[0],
     });
     errors.push(...result.errors);
   }
   if (lines.length >= 2) {
     const result = newLineValidator({
-      string: lines[1],
-      matches: {},
       errors: [],
+      matches: {},
+      string: lines[1],
     });
     errors.push(...result.errors);
   }
@@ -113,9 +114,9 @@ function lintCommitMessage(message) {
     if (bodyAndFooter.length >= 1) {
       const result = lintSection(
         {
-          string: bodyAndFooter[0],
-          matches: {},
           errors: [],
+          matches: {},
+          string: bodyAndFooter[0],
         },
         'body'
       );
@@ -125,9 +126,9 @@ function lintCommitMessage(message) {
     if (bodyAndFooter.length === 2) {
       const result = lintSection(
         {
-          string: bodyAndFooter[1],
-          matches: {},
           errors: [],
+          matches: {},
+          string: bodyAndFooter[1],
         },
         'footer'
       );

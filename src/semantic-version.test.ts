@@ -1,4 +1,4 @@
-const semanticVersion = require('./semantic-version');
+import semanticVersion from './semantic-version';
 
 const {
   parseCommit,
@@ -25,55 +25,55 @@ const headerAndBodyAndBreakingFooter = [
 describe('semanticVersion.getCommit', () => {
   it('should turn a header into normalized object', () => {
     expect(parseCommit(typeAndDesc)).toMatchObject({
-      type: 'fix',
-      scope: undefined,
-      description: 'something',
       body: undefined,
+      description: 'something',
       footer: undefined,
+      scope: undefined,
+      type: 'fix',
     });
   });
 
   it('should turn a header with scope into an object', () => {
     expect(parseCommit(typeAndScopeAndDesc)).toMatchObject({
-      type: 'fix',
-      scope: 'bug',
-      description: 'something',
       body: undefined,
+      description: 'something',
       footer: undefined,
+      scope: 'bug',
+      type: 'fix',
     });
   });
 
   it('should turn a header with body into an object', () => {
     expect(parseCommit(headerWithBody)).toMatchObject({
-      type: 'fix',
-      scope: undefined,
-      description: 'something',
       body: 'content',
+      description: 'something',
       footer: undefined,
+      scope: undefined,
+      type: 'fix',
     });
   });
 
   it('should turn a header with breaking changes in body into an object', () => {
     expect(parseCommit(headerAndBreakingBody)).toMatchObject({
-      type: 'fix',
-      scope: undefined,
-      description: 'something',
       body: 'content',
+      description: 'something',
       footer: undefined,
+      scope: undefined,
+      type: 'fix',
     });
   });
 
   it('should turn a header with breaking changes into an object', () => {
     expect(parseCommit(headerAndBodyAndBreakingFooter)).toMatchObject({
-      type: 'fix',
-      scope: undefined,
-      description: 'something',
       body: 'content',
+      description: 'something',
       footer: 'content',
+      scope: undefined,
+      type: 'fix',
     });
   });
 
-  function pickVersionBump(str) {
+  function pickVersionBump(str: string) {
     return parseCommit(str).proposedVersionBump;
   }
 
@@ -93,55 +93,59 @@ describe('semanticVersion.getCommit', () => {
 });
 
 describe('semanticVersion.getVersionBumpType', () => {
+  const patch: 'patch' = 'patch';
+  const minor: 'minor' = 'minor';
+  const major: 'major' = 'major';
+
   it('should get patch if there are only patches', () => {
     expect(
       getVersionBumpType([
-        { proposedVersionBump: 'patch' },
-        { proposedVersionBump: 'patch' },
+        { proposedVersionBump: patch },
+        { proposedVersionBump: patch },
       ])
-    ).toEqual('patch');
+    ).toEqual(patch);
   });
 
   it('should get minor if there is no major', () => {
     expect(
       getVersionBumpType([
-        { proposedVersionBump: 'patch' },
-        { proposedVersionBump: 'patch' },
-        { proposedVersionBump: 'minor' },
-        { proposedVersionBump: 'patch' },
+        { proposedVersionBump: patch },
+        { proposedVersionBump: patch },
+        { proposedVersionBump: minor },
+        { proposedVersionBump: patch },
       ])
-    ).toEqual('minor');
+    ).toEqual(minor);
   });
 
   it('should get major if there is any major', () => {
     expect(
       getVersionBumpType([
-        { proposedVersionBump: 'patch' },
-        { proposedVersionBump: 'major' },
-        { proposedVersionBump: 'minor' },
-        { proposedVersionBump: 'patch' },
+        { proposedVersionBump: patch },
+        { proposedVersionBump: major },
+        { proposedVersionBump: minor },
+        { proposedVersionBump: patch },
       ])
-    ).toEqual('major');
+    ).toEqual(major);
   });
 
   describe('semanticVersion.increaseVersionBump', () => {
     const version = { major: 0, minor: 0, patch: 0 };
     it('should increase major version accordingly', () => {
-      expect(increaseVersionBump(version, 'major')).toEqual({
+      expect(increaseVersionBump(version, major)).toEqual({
         ...version,
         major: 1,
       });
     });
 
     it('should increase minor version accordingly', () => {
-      expect(increaseVersionBump(version, 'minor')).toEqual({
+      expect(increaseVersionBump(version, minor)).toEqual({
         ...version,
         minor: 1,
       });
     });
 
     it('should increase patch version accordingly', () => {
-      expect(increaseVersionBump(version, 'patch')).toEqual({
+      expect(increaseVersionBump(version, patch)).toEqual({
         ...version,
         patch: 1,
       });

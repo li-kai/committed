@@ -1,6 +1,6 @@
-const validation = require('./validation');
+import { Config, makeValidator } from './validation';
 
-function getConfig(string) {
+function getConfig(string: string): Config {
   return {
     string,
     matches: {},
@@ -9,15 +9,19 @@ function getConfig(string) {
 }
 
 describe('makeValidator', () => {
-  const { makeValidator } = validation;
-
   it('should create a validation function', () => {
-    expect(makeValidator()).toBeInstanceOf(Function);
+    expect(
+      makeValidator({ name: '', pattern: /(a)/, errorMsg: '' })
+    ).toBeInstanceOf(Function);
   });
 
   describe('when there is a match', () => {
     it('should consume the string', () => {
-      const validateFn = makeValidator('', /(a)/, '');
+      const validateFn = makeValidator({
+        errorMsg: '',
+        name: '',
+        pattern: /(a)/,
+      });
       const config = getConfig('<---> a <--->');
       const result = validateFn(config);
 
@@ -27,7 +31,11 @@ describe('makeValidator', () => {
 
   describe('when there is no error message', () => {
     it('should treat error message as optional', () => {
-      const validateFn = makeValidator('', /(a)/, '');
+      const validateFn = makeValidator({
+        errorMsg: '',
+        name: '',
+        pattern: /(a)/,
+      });
       const config = getConfig('b');
       const result = validateFn(config);
 
@@ -37,7 +45,11 @@ describe('makeValidator', () => {
 
   describe('when there is a error message', () => {
     const errMsg = 'error';
-    const validateFn = makeValidator('', /(a)/, errMsg);
+    const validateFn = makeValidator({
+      errorMsg: errMsg,
+      name: '',
+      pattern: /(a)/,
+    });
 
     it('should add error message on missing match', () => {
       const config = getConfig('b');
@@ -57,7 +69,11 @@ describe('makeValidator', () => {
 
   describe('when there is no key', () => {
     it('should not add match to "matches" key', () => {
-      const validateFn = makeValidator('', /(a)/, '');
+      const validateFn = makeValidator({
+        errorMsg: '',
+        name: '',
+        pattern: /(a)/,
+      });
       const config = getConfig('a');
       const result = validateFn(config);
 
@@ -69,7 +85,11 @@ describe('makeValidator', () => {
   describe('when there is a key', () => {
     it('should add match to "matches" key', () => {
       const key = 'a';
-      const validateFn = makeValidator(key, /(a)/, '');
+      const validateFn = makeValidator({
+        errorMsg: '',
+        name: key,
+        pattern: /(a)/,
+      });
       const config = getConfig(key);
       const result = validateFn(config);
 

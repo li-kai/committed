@@ -1,8 +1,8 @@
-const patterns = require('./patterns');
+import patterns from './patterns';
 
 describe('patterns', () => {
-  function getGroups(pattern) {
-    return (str) => {
+  function getGroups(pattern: RegExp) {
+    return (str: string) => {
       const res = pattern.exec(str);
       return res ? res.groups : null;
     };
@@ -110,14 +110,14 @@ describe('patterns', () => {
 
     it('should match a proper header', () => {
       expect(testType('type(scope): lorem ipsum')).toEqual({
-        type: 'type',
-        scope: 'scope',
         description: 'lorem ipsum',
+        scope: 'scope',
+        type: 'type',
       });
       expect(testType('type: lorem ipsum')).toEqual({
-        type: 'type',
-        scope: undefined,
         description: 'lorem ipsum',
+        scope: undefined,
+        type: 'type',
       });
     });
 

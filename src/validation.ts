@@ -1,5 +1,16 @@
-function makeValidator({ name, pattern, errorMsg }) {
-  return (config) => {
+export type Config = {
+  string: string;
+  matches: { [key: string]: string };
+  errors: string[];
+}
+
+type ValidatorArgs = {
+  name: string;
+  pattern: RegExp;
+  errorMsg: string;
+}
+function makeValidator({ name, pattern, errorMsg }: ValidatorArgs) {
+  return (config: Config) => {
     const res = pattern.exec(config.string);
     if (res === null) {
       if (!errorMsg) {
@@ -18,8 +29,8 @@ function makeValidator({ name, pattern, errorMsg }) {
 
     const result = {
       ...config,
-      string: restOfString,
       matches: { ...config.matches },
+      string: restOfString,
     };
 
     if (name) {
@@ -30,6 +41,4 @@ function makeValidator({ name, pattern, errorMsg }) {
   };
 }
 
-module.exports = {
-  makeValidator,
-};
+export { makeValidator };

@@ -1,30 +1,29 @@
+import path from 'path';
 /* eslint-disable import/no-extraneous-dependencies */
-const path = require('path');
-const fs = require('fs');
-const { promisify } = require('util');
+import fs from 'fs';
+import { promisify } from 'util';
+import Terser, { ECMA } from 'terser';
 
-const Terser = require('terser');
-const prettyBytes = require('./pretty-bytes');
+import prettyBytes from './pretty-bytes';
 
 const options = {
   warnings: true,
   mangle: { toplevel: true },
-  compress: {
-    ecma: 6,
-  },
-  ecma: 6,
+  ecma: 6 as ECMA,
 };
 
 const readFileAsync = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
 
-function uglify([destFilePath, srcFilePath]) {
-  let srcFileSize;
-  let destFileSize;
+function uglify([destFilePath, srcFilePath]: string[]) {
+  let srcFileSize: string;
+  let destFileSize: string;
 
   readFileAsync(path.resolve(srcFilePath), 'utf-8')
     .then((data) => {
       const result = Terser.minify(data, options);
+      if (!result.code) throw new Error('No code');
+
       srcFileSize = prettyBytes(data.length);
       destFileSize = prettyBytes(result.code.length);
 

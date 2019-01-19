@@ -8,40 +8,43 @@ Formats the given number using `Number#toLocaleString`.
 - If locale is true, the system default locale is used for translation.
 - If no value for locale is specified, the number is returned unmodified.
 */
-const toLocaleString = (number, locale) => {
-  let result = number;
+const toLocaleString = (number: number, locale?: string | boolean): string => {
+  let result;
   if (typeof locale === 'string') {
     result = number.toLocaleString(locale);
   } else if (locale === true) {
     result = number.toLocaleString();
+  } else {
+    result = number.toString();
   }
 
   return result;
 };
 
-module.exports = (number, options) => {
+type Options = { signed?: boolean, locale?: string | boolean }
+export default (number: number, options: Options = {}) => {
   if (!Number.isFinite(number)) {
     throw new TypeError(
       `Expected a finite number, got ${typeof number}: ${number}`
     );
   }
 
-  options = Object.assign({}, options);
+  const opts = options;
 
-  if (options.signed && number === 0) {
+  if (opts.signed && number === 0) {
     return ' 0 B';
   }
 
   const isNegative = number < 0;
   // eslint-disable-next-line no-nested-ternary
-  const prefix = isNegative ? '-' : options.signed ? '+' : '';
+  const prefix = isNegative ? '-' : opts.signed ? '+' : '';
 
   if (isNegative) {
     number = -number;
   }
 
   if (number < 1) {
-    const numberString = toLocaleString(number, options.locale);
+    const numberString = toLocaleString(number, opts.locale);
     return `${prefix + numberString} B`;
   }
 
@@ -51,7 +54,7 @@ module.exports = (number, options) => {
   );
   // eslint-disable-next-line no-restricted-properties
   number = Number((number / Math.pow(1000, exponent)).toPrecision(3));
-  const numberString = toLocaleString(number, options.locale);
+  const numberString = toLocaleString(number, opts.locale);
 
   const unit = UNITS[exponent];
 

@@ -1,18 +1,18 @@
-const childProcess = require('child_process');
-const os = require('os');
-const path = require('path');
+import childProcess from 'child_process';
+import os from 'os';
+import path from 'path';
 
 /**
  * E2E tests for git, because we want to execute against
  * the real git repo in order to test.
  */
-function gitCmd(args) {
-  return new Promise((resovle, reject) => {
+function gitCmd(args: string[]): Promise<string> {
+  return new Promise((resolve, reject) => {
     childProcess.execFile('git', args, (err, stdout) => {
       if (err) {
         reject(err);
       } else {
-        resovle(stdout.trimRight());
+        resolve(stdout.trimRight());
       }
     });
   });
@@ -37,23 +37,29 @@ async function getFilesFromHead() {
 }
 
 const COMMIT_REGEX = /commit (?<hash>\w+)\n(?<author>.+)\n(?<ts>\d+)\n(?<content>[\S\s]+)\n/;
-async function getCommitsFromRef(fromHash) {
+async function getCommitsFromRef(fromHash?: string) {
   const str = await gitCmd([
     'rev-list',
     '--first-parent',
     `--format=%an%n%at%n%B%x00`,
     fromHash ? `${fromHash}..HEAD` : 'HEAD',
   ]);
-  const commits = [];
+  const commits: Array<{ [key: string]: string }> = [];
 
   str
     .replace(os.EOL, '\n')
     .split('\x00\n')
     .forEach((commit) => {
       const result = COMMIT_REGEX.exec(commit);
-      if (!result) return;
+      if (!result) {
+        return;
+      }
+      const groups = result.groups;
+      if (!groups) {
+        return;
+      }
 
-      commits.push(result.groups);
+      commits.push(groups);
     });
 
   return commits;
@@ -72,7 +78,37 @@ const SEMANTIC_VERSIONING_REGEX = new RegExp(
     PRERELEASE_REGEX.source
   }`
 );
-async function getAllTags() {
+
+export interface SemanticVersion {
+  name: string;
+  major: number;
+  minor: number;
+  patch: number;
+  prerelease: string;
+}
+
+function getSemanticVersionFromString(str: string): SemanticVersion | null {
+  const versionMatch = VERSION_REGEX.exec(str);
+  if (!versionMatch || !versionMatch.groups) {
+    return null;
+  }
+  const versionGroups = versionMatch.groups;
+  const semanticMatch = SEMANTIC_VERSIONING_REGEX.exec(versionGroups.version);
+  if (!semanticMatch || !semanticMatch.groups) {
+    return null;
+  }
+  const semanticGroups = semanticMatch.groups;
+
+  const semanticVersion = {} as SemanticVersion;
+  semanticVersion.name = versionGroups.name;
+  semanticVersion.major = parseInt(semanticGroups.major, 10);
+  semanticVersion.minor = parseInt(semanticGroups.minor, 10);
+  semanticVersion.patch = parseInt(semanticGroups.patch, 10);
+  semanticVersion.prerelease = semanticGroups.prerelease;
+  return semanticVersion;
+}
+
+async function getAllTags(): Promise<SemanticVersion[]> {
   // https://stackoverflow.com/a/52680984/4819795
   const str = await gitCmd([
     '-c',
@@ -82,26 +118,20 @@ async function getAllTags() {
     '--format=%(refname:lstrip=2)',
     'refs/tags',
   ]);
-  const lines = [];
+  const lines: SemanticVersion[] = [];
 
   str.split(os.EOL).forEach((line) => {
-    const versionResult = VERSION_REGEX.exec(line);
-    if (!versionResult) return;
-    const result = SEMANTIC_VERSIONING_REGEX.exec(versionResult.groups.version);
-    if (!result) return;
-
-    const versionObj = result.groups;
-    versionObj.major = parseInt(versionObj.major, 10);
-    versionObj.minor = parseInt(versionObj.minor, 10);
-    versionObj.patch = parseInt(versionObj.patch, 10);
-
-    lines.push({ ...versionResult.groups, ...versionObj });
+    const versionResult = getSemanticVersionFromString(line);
+    if (!versionResult) {
+      return;
+    }
+    lines.push(versionResult);
   });
 
   return lines;
 }
 
-module.exports = {
+export default {
   getGitRootPath,
   getGitHooksPath,
   getFilesFromHead,

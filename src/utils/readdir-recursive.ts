@@ -1,25 +1,32 @@
-const path = require('path');
-const afs = require('./afs');
+import path from 'path';
+import afs from './afs';
 
 const NODE_PATHS = /^(?:\.|node_modules)/;
 
 /* eslint-disable no-await-in-loop, no-continue, no-plusplus */
-async function readdirRecursive(startPath) {
+async function readdirRecursive(startPath: string) {
   const results = [];
 
   const queue = [startPath];
 
   while (queue.length) {
-    const current = queue.pop();
+    // Thanks to check above, pop is never undefined
+    const current = queue.pop()!;
 
     try {
-      const contents = await afs.readdir(current, { withFileTypes: true });
-      if (!contents.length) continue;
+      const contents = await afs.readdir(current, {
+        withFileTypes: true,
+      });
+      if (!contents.length) {
+        continue;
+      }
 
       for (let i = 0; i < contents.length; i++) {
         const content = contents[i];
         const contentPath = path.join(current, content.name);
-        if (NODE_PATHS.test(content.name)) continue;
+        if (NODE_PATHS.test(content.name)) {
+          continue;
+        }
 
         const isDir = content.isDirectory();
 
@@ -36,4 +43,4 @@ async function readdirRecursive(startPath) {
   return results;
 }
 
-module.exports = readdirRecursive;
+export default readdirRecursive;

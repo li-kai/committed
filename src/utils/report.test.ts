@@ -1,17 +1,16 @@
 /* eslint-disable no-global-assign */
-const report = require('./report');
+import report from './report';
+
+jest.mock('process');
+jest.mock('console');
 
 describe('makeValidator', () => {
   const realProcess = process;
   const realConsole = console;
 
   beforeAll(() => {
-    process = {
-      exit: jest.fn(),
-    };
-    console = {
-      error: jest.fn(),
-    };
+    process = { exit: jest.fn() as any } as any;
+    console = { error: jest.fn() as any } as any;
   });
 
   afterAll(() => {

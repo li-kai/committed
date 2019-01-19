@@ -1,4 +1,4 @@
-const commitTypes = require('../utils/commit-types');
+import commitTypes from '../utils/commit-types';
 
 const gitNotFoundMessage = `
 program “git” is not installed or not in the PATH
@@ -10,10 +10,10 @@ const gitRepoNotFoundMessage = `git repository not found, try running 'git init'
 
 const commitedHeader = '// @ones-io/committed';
 
-const installedHook = (sourceHook, targetHook) =>
+const installedHook = (sourceHook: string, targetHook: string) =>
   `installed ${sourceHook} at ${targetHook}`;
 
-const skippingHook = (hookPath) =>
+const skippingHook = (hookPath: string) =>
   `skipping existing user installed hook at ${hookPath}`;
 
 const typeTokenizeError = `commit must start with the following types:
@@ -21,10 +21,10 @@ ${Object.entries(commitTypes.typeDescriptions)
   .map(([type, desc]) => `${type}: `.padEnd(10) + desc)
   .join('')}`;
 
-module.exports = {
+export {
+  commitedHeader,
   gitNotFoundMessage,
   gitRepoNotFoundMessage,
-  commitedHeader,
   installedHook,
   skippingHook,
   typeTokenizeError,

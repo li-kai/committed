@@ -6,11 +6,12 @@
  * node 8 is deprecated
  */
 
-const fs = require('fs');
-const { promisify } = require('util');
+import fs from 'fs';
+import { promisify } from 'util';
 
-module.exports = {
+export default {
   ...fs,
+  chmod: promisify(fs.chmod),
   symlink: promisify(fs.symlink),
   readFile: promisify(fs.readFile),
   lstat: promisify(fs.lstat),

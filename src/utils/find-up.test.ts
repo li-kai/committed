@@ -1,5 +1,5 @@
-const { vol } = require('memfs');
-const findUp = require('./find-up');
+import { vol } from 'memfs';
+import findUp from './find-up';
 
 jest.mock('fs');
 

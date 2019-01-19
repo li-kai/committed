@@ -1,5 +1,5 @@
-const { vol } = require('memfs');
-const readdirRecursive = require('./readdir-recursive');
+import { vol } from 'memfs';
+import readdirRecursive from './readdir-recursive';
 
 jest.mock('fs');
 

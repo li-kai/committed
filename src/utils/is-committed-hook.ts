@@ -6,15 +6,15 @@
  * node 8 is deprecated
  */
 
-const afs = require('./afs');
+import afs from './afs';
 
-const { commitedHeader } = require('./strings');
+import { commitedHeader } from './strings';
 
-function isCommittedHook(path) {
+function isCommittedHook(path: string) {
   return afs
     .readFile(path, 'utf8')
     .then((fileContent) => fileContent.includes(commitedHeader))
     .catch(() => false);
 }
 
-module.exports = isCommittedHook;
+export default isCommittedHook;

@@ -1,6 +1,6 @@
-const afs = require('./afs');
+import afs from './afs';
 
-async function pathExists(filePath) {
+async function pathExists(filePath: string) {
   try {
     await afs.access(filePath, afs.constants.F_OK);
     return true;
@@ -9,4 +9,4 @@ async function pathExists(filePath) {
   }
 }
 
-module.exports = pathExists;
+export default pathExists;

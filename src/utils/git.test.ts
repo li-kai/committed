@@ -3,8 +3,8 @@
  * the real git repo in order to test.
  */
 
-const path = require('path');
-const git = require('./git');
+import path from 'path';
+import git from './git';
 
 describe('git', () => {
   it('should return git root path', async () => {

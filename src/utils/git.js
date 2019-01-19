@@ -90,7 +90,12 @@ async function getAllTags() {
     const result = SEMANTIC_VERSIONING_REGEX.exec(versionResult.groups.version);
     if (!result) return;
 
-    lines.push({ ...versionResult.groups, ...result.groups });
+    const versionObj = result.groups;
+    versionObj.major = parseInt(versionObj.major, 10);
+    versionObj.minor = parseInt(versionObj.minor, 10);
+    versionObj.patch = parseInt(versionObj.patch, 10);
+
+    lines.push({ ...versionResult.groups, ...versionObj });
   });
 
   return lines;

@@ -27,32 +27,25 @@ function parseCommit(commitStr: string): ICommit {
     proposedVersionBump = 'minor';
   }
 
-  if (lines.length >= 3) {
-    const content = lines[2];
+  function parseContent(content: string) {
     const contentMatch = patterns.BODY.exec(content);
 
     if (!contentMatch || !contentMatch.groups) {
       throw new Error('No content');
     }
 
-    body = contentMatch.groups.content;
     if (contentMatch.groups.breakingChange) {
       proposedVersionBump = 'major';
     }
+    return contentMatch.groups.content;
+  }
+
+  if (lines.length >= 3) {
+    body = parseContent(lines[2]);
   }
 
   if (lines.length >= 5) {
-    const content = lines[4];
-    const contentMatch = patterns.BODY.exec(content);
-
-    if (!contentMatch || !contentMatch.groups) {
-      throw new Error('No content');
-    }
-
-    footer = contentMatch.groups.content;
-    if (contentMatch.groups.breakingChange) {
-      proposedVersionBump = 'major';
-    }
+    footer = parseContent(lines[4]);
   }
 
   return {

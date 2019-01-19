@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "lib": ["es2018"],
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true
+    }
+}

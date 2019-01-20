@@ -1,9 +1,5 @@
 export type VersionBump = 'major' | 'minor' | 'patch';
 
-export interface IProposedVersionBump {
-  proposedVersionBump: VersionBump;
-}
-
 export interface ICommitMeta {
   hash: string;
   author: string;
@@ -11,12 +7,13 @@ export interface ICommitMeta {
   content: string;
 }
 
-export interface ICommit extends IProposedVersionBump {
+export interface ICommit {
   type: string;
   scope: string | undefined;
   description: string;
   body: string | undefined;
   footer: string | undefined;
+  proposedVersionBump: VersionBump;
 }
 
 export interface ISemanticVersionTag {

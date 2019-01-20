@@ -1,10 +1,6 @@
 import semanticVersion from './semantic-version';
 
-const {
-  parseCommit,
-  getVersionBumpType,
-  increaseVersionBump,
-} = semanticVersion;
+const { parseCommit, getVersionBump, increaseVersionBump } = semanticVersion;
 
 const typeAndDesc = 'fix: something';
 const typeAndScopeAndDesc = 'fix(bug): something';
@@ -92,40 +88,21 @@ describe('semanticVersion.getCommit', () => {
   });
 });
 
-describe('semanticVersion.getVersionBumpType', () => {
+describe('semanticVersion.getVersionBump', () => {
   const patch: 'patch' = 'patch';
   const minor: 'minor' = 'minor';
   const major: 'major' = 'major';
 
   it('should get patch if there are only patches', () => {
-    expect(
-      getVersionBumpType([
-        { proposedVersionBump: patch },
-        { proposedVersionBump: patch },
-      ])
-    ).toEqual(patch);
+    expect(getVersionBump([patch, patch])).toEqual(patch);
   });
 
   it('should get minor if there is no major', () => {
-    expect(
-      getVersionBumpType([
-        { proposedVersionBump: patch },
-        { proposedVersionBump: patch },
-        { proposedVersionBump: minor },
-        { proposedVersionBump: patch },
-      ])
-    ).toEqual(minor);
+    expect(getVersionBump([patch, patch, minor, patch])).toEqual(minor);
   });
 
   it('should get major if there is any major', () => {
-    expect(
-      getVersionBumpType([
-        { proposedVersionBump: patch },
-        { proposedVersionBump: major },
-        { proposedVersionBump: minor },
-        { proposedVersionBump: patch },
-      ])
-    ).toEqual(major);
+    expect(getVersionBump([patch, major, minor, patch])).toEqual(major);
   });
 
   describe('semanticVersion.increaseVersionBump', () => {

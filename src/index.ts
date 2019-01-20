@@ -146,7 +146,10 @@ async function findPkgJson() {
         semanticVersion.parseCommit(commit.content)
       );
 
-      const maxVersionBump = semanticVersion.getVersionBumpType(parsedCommits);
+      const versionBumps = parsedCommits.map(
+        (parsedCommit) => parsedCommit.proposedVersionBump
+      );
+      const maxVersionBump = semanticVersion.getVersionBump(versionBumps);
       const newVersion = semanticVersion.increaseVersionBump(
         previousTag,
         maxVersionBump

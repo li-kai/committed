@@ -1,11 +1,6 @@
 import os from 'os';
 import patterns from './patterns';
-import {
-  ICommit,
-  IProposedVersionBump,
-  ISemanticVersionTag,
-  VersionBump,
-} from './types';
+import { ICommit, ISemanticVersionTag, VersionBump } from './types';
 
 function parseCommit(commitStr: string): ICommit {
   const lines = commitStr.replace(os.EOL, '\n').split('\n');
@@ -66,13 +61,13 @@ function parseCommit(commitStr: string): ICommit {
 /**
  * Returns the largest version type recommended in that range
  */
-function getVersionBumpType(commits: IProposedVersionBump[]): VersionBump {
+function getVersionBump(versionBumps: VersionBump[]): VersionBump {
   let maxVersionBump: VersionBump = 'patch';
-  for (const commit of commits) {
-    if (commit.proposedVersionBump === 'major') {
+  for (const versionBump of versionBumps) {
+    if (versionBump === 'major') {
       return 'major';
     }
-    if (commit.proposedVersionBump === 'minor') {
+    if (versionBump === 'minor') {
       maxVersionBump = 'minor';
     }
   }
@@ -104,6 +99,6 @@ function increaseVersionBump(
 
 export default {
   parseCommit,
-  getVersionBumpType,
+  getVersionBump,
   increaseVersionBump,
 };

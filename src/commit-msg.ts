@@ -19,7 +19,7 @@ const commitMessagePath = args[2];
 
 const readFileAsync = util.promisify(fs.readFile);
 
-function compose<T>(fns: Array<((input: T) => T)>) {
+function compose<T>(fns: Array<(input: T) => T>) {
   return (config: T) => fns.reduce((pre, fn) => fn(pre), config);
 }
 

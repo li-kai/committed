@@ -7,7 +7,7 @@ export interface ICommitMeta {
   content: string;
 }
 
-export interface ICommit {
+export interface ICommitContent {
   type: string;
   scope: string | undefined;
   description: string;

@@ -185,3 +185,16 @@ async function linkFiles() {
 linkFiles().catch((err) => {
   console.error(err);
 });
+
+async function main() {
+  // 1. Verify git, npm login presence
+  const files = await gitUtils.getGitRootPath();
+  const npmLoging = await npmUtils.getLogin();
+  // 2. Parse git tags and obtain their latest versions
+  // 3. Check for each tag whether there are changes
+  // 4. Get version upgrade, find out if it is needed at all
+  // 5. Generate the changelogs for all the version upgrades
+  // 6. Create the git tag
+  // 7. Publish the libraries
+  // 8. Notify eternal parties (Github Releases etc)
+}

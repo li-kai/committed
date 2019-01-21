@@ -1,16 +1,9 @@
 import os from 'os';
 import patterns from './patterns';
-import { ICommit, ISemanticVersionTag, VersionBump } from './types';
+import { ICommitContent, ISemanticVersionTag, VersionBump } from './types';
 
-function parseCommit(commitStr: string): ICommit {
+function parseCommit(commitStr: string): ICommitContent {
   const lines = commitStr.replace(os.EOL, '\n').split('\n');
-
-  let type;
-  let scope;
-  let description;
-  let body;
-  let footer;
-  let proposedVersionBump: VersionBump = 'patch';
 
   const header = lines[0];
   const match = patterns.HEADER.exec(header);
@@ -19,9 +12,10 @@ function parseCommit(commitStr: string): ICommit {
     throw new Error('No header');
   }
 
-  type = match.groups.type;
-  scope = match.groups.scope;
-  description = match.groups.description;
+  let { type, scope, description } = match.groups;
+  let body;
+  let footer;
+  let proposedVersionBump: VersionBump = 'patch';
 
   if (type === 'feat') {
     proposedVersionBump = 'minor';

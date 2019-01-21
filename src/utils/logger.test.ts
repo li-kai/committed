@@ -1,5 +1,5 @@
 /* eslint-disable no-global-assign */
-import report from './report';
+import logger from './logger';
 
 jest.mock('process');
 jest.mock('console');
@@ -20,7 +20,7 @@ describe('makeValidator', () => {
 
   it('should log and exit the process', () => {
     const msg = 'msg';
-    report.error(msg);
+    logger.fatal(msg);
     expect(console.error).toHaveBeenCalledWith(msg);
     expect(process.exit).toHaveBeenCalledWith(1);
   });

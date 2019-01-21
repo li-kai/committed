@@ -5,14 +5,14 @@ import os from 'os';
 import path from 'path';
 import util from 'util';
 import commitTypes from './utils/commit-types';
-import report from './utils/report';
+import logger from './utils/logger';
 import * as strings from './utils/strings';
 import { Config, makeValidator } from './validation';
 
 const args = process.argv;
 
 if (args.length !== 3) {
-  report.error('Path to commit message not found');
+  logger.fatal('Path to commit message not found');
 }
 
 const commitMessagePath = args[2];
@@ -139,7 +139,7 @@ function lintCommitMessage(message: string) {
   }
 
   if (errors.length) {
-    report.error(errors.join(os.EOL));
+    logger.fatal(errors.join(os.EOL));
   }
 }
 
@@ -148,7 +148,7 @@ readFileAsync(path.normalize(commitMessagePath))
     const msg = data.toString().trimRight();
     lintCommitMessage(msg);
   })
-  .catch((err) => report.error(err.message))
+  .catch((err) => logger.fatal(err.message))
   .then(() => {
     process.exit(0);
   });

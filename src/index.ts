@@ -8,7 +8,7 @@ import findUp from './utils/find-up';
 import gitUtils, { GitBranchStatus } from './git/gitUtils';
 import isCommittedHook from './utils/is-committed-hook';
 import pathExists from './utils/path-exists';
-import report from './utils/report';
+import logger from './utils/logger';
 import * as strings from './utils/strings';
 
 /**
@@ -16,7 +16,7 @@ import * as strings from './utils/strings';
  */
 childProcess.execFile('git', ['--version'], (error) => {
   if (error) {
-    report.error(strings.gitNotFoundMessage);
+    logger.fatal(strings.gitNotFoundMessage);
   }
 });
 
@@ -84,7 +84,7 @@ async function findPkgJson() {
       const pkgJson = JSON.parse(fileContent);
 
       if (!pkgJson.name) {
-        report.error('no package name found');
+        logger.fatal('no package name found');
       }
 
       repoMetas.push({
@@ -98,7 +98,7 @@ async function findPkgJson() {
   );
 
   if (repoMetas.length === 0) {
-    report.error('no package.json file found');
+    logger.fatal('no package.json file found');
   }
   const isMonoRepo = repoMetas.length > 1;
 
@@ -119,7 +119,7 @@ async function findPkgJson() {
     existingTags.forEach((tag) => {
       const tagName = tag.name;
       if (tagName === undefined) {
-        report.error('No tag name given');
+        logger.fatal('No tag name given');
         return;
       }
 
@@ -162,7 +162,7 @@ async function linkFiles() {
   const gitDir = await findUp('.git');
 
   if (gitDir == null) {
-    report.error(strings.gitRepoNotFoundMessage);
+    logger.fatal(strings.gitRepoNotFoundMessage);
     return;
   }
 
@@ -190,9 +190,9 @@ async function main() {
   // 1. Verify git, npm login presence
   const gitStatus = await gitUtils.getBranchStatus();
   if (gitStatus === GitBranchStatus.Behind) {
-    report.error('your branch is behind origin');
+    logger.fatal('your branch is behind origin');
   } else if (gitStatus === GitBranchStatus.Diverged) {
-    report.error('your branch has diverged from origin');
+    logger.fatal('your branch has diverged from origin');
   }
   const npmLoging = await npmUtils.getLogin();
   // 2. Parse git tags and obtain their latest versions

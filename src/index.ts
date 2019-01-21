@@ -6,6 +6,7 @@ import { IRepoMeta } from './types';
 import afs from './utils/afs';
 import findUp from './utils/find-up';
 import gitUtils, { GitBranchStatus } from './git/gitUtils';
+import npmUtils from './npm/npmUtils';
 import isCommittedHook from './utils/is-committed-hook';
 import pathExists from './utils/path-exists';
 import logger from './utils/logger';
@@ -194,7 +195,10 @@ async function main() {
   } else if (gitStatus === GitBranchStatus.Diverged) {
     logger.fatal('your branch has diverged from origin');
   }
-  const npmLoging = await npmUtils.getLogin();
+  const npmAuth = await npmUtils.ensureAuth();
+  if (!npmAuth) {
+    logger.fatal(`npm authentication not set up`);
+  }
   // 2. Parse git tags and obtain their latest versions
   // 3. Check for each tag whether there are changes
   // 4. Get version upgrade, find out if it is needed at all

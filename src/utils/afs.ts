@@ -14,6 +14,7 @@ export default {
   chmod: promisify(fs.chmod),
   symlink: promisify(fs.symlink),
   readFile: promisify(fs.readFile),
+  writeFile: promisify(fs.writeFile),
   lstat: promisify(fs.lstat),
   mkdir: promisify(fs.mkdir),
   readdir: promisify(fs.readdir),

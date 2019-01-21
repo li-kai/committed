@@ -4,7 +4,7 @@
  */
 
 import path from 'path';
-import git from './git';
+import git, { GitBranchStatus } from './git';
 
 describe('git', () => {
   it('should return git root path', async () => {
@@ -25,7 +25,7 @@ describe('git', () => {
         'LICENSE',
         'README.md',
         'package.json',
-        'src/index.js',
+        'src/index.ts',
         'yarn.lock',
       ])
     );
@@ -69,9 +69,17 @@ Array [
     "name": undefined,
     "patch": 0,
     "prerelease": undefined,
-    "version": "0.0.0",
+    "versionStr": "0.0.0",
   },
 ]
 `);
+  });
+
+  it('should tell current branch status', async () => {
+    expect.assertions(1);
+    const status = await git.getBranchStatus();
+    expect(
+      status === GitBranchStatus.Ahead || status === GitBranchStatus.Exact
+    ).toBeTruthy();
   });
 });

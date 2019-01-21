@@ -131,10 +131,43 @@ async function getAllTags(): Promise<ISemanticVersionTag[]> {
   return lines;
 }
 
+export enum GitBranchStatus {
+  Diverged,
+  Exact,
+  Ahead,
+  Behind,
+}
+async function getBranchStatus(): Promise<GitBranchStatus> {
+  const LOCAL = await gitCmd(['rev-parse', '@']);
+  const REMOTE = await gitCmd(['rev-parse', '@{u}']);
+  const BASE = await gitCmd(['merge-base', '@', '@{u}']);
+
+  if (LOCAL === REMOTE) {
+    return GitBranchStatus.Exact;
+  } else if (LOCAL === BASE) {
+    return GitBranchStatus.Behind;
+  } else if (REMOTE === BASE) {
+    return GitBranchStatus.Ahead;
+  } else {
+    return GitBranchStatus.Diverged;
+  }
+}
+
+async function getBranchName() {
+  return gitCmd(['rev-parse', '--abbrev-ref', 'HEAD']);
+}
+
+async function fetchRemote() {
+  return gitCmd(['remote', 'update']);
+}
+
 export default {
   getGitRootPath,
   getGitHooksPath,
   getFilesFromHead,
   getCommitsFromRef,
   getAllTags,
+  getBranchName,
+  getBranchStatus,
+  fetchRemote,
 };

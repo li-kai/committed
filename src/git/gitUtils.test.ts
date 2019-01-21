@@ -4,7 +4,7 @@
  */
 
 import path from 'path';
-import git, { GitBranchStatus } from './git';
+import git, { GitBranchStatus } from './gitUtils';
 
 describe('git', () => {
   it('should return git root path', async () => {

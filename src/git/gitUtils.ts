@@ -131,7 +131,7 @@ async function getAllTags(): Promise<ISemanticVersionTag[]> {
   return lines;
 }
 
-export enum GitBranchStatus {
+export const enum GitBranchStatus {
   Diverged,
   Exact,
   Ahead,

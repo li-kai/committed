@@ -5,7 +5,7 @@ import semanticVersion from './semantic-version';
 import { IRepoMeta } from './types';
 import afs from './utils/afs';
 import findUp from './utils/find-up';
-import gitUtils from './utils/git';
+import gitUtils, { GitBranchStatus } from './git/gitUtils';
 import isCommittedHook from './utils/is-committed-hook';
 import pathExists from './utils/path-exists';
 import report from './utils/report';
@@ -188,7 +188,12 @@ linkFiles().catch((err) => {
 
 async function main() {
   // 1. Verify git, npm login presence
-  const files = await gitUtils.getGitRootPath();
+  const gitStatus = await gitUtils.getBranchStatus();
+  if (gitStatus === GitBranchStatus.Behind) {
+    report.error('your branch is behind origin');
+  } else if (gitStatus === GitBranchStatus.Diverged) {
+    report.error('your branch has diverged from origin');
+  }
   const npmLoging = await npmUtils.getLogin();
   // 2. Parse git tags and obtain their latest versions
   // 3. Check for each tag whether there are changes

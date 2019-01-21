@@ -12,18 +12,33 @@ interface IChangelog {
   commits: ICommitData[];
 }
 
-function generateChangelog(template: (changelogData: IChangelog) => string) {
-  return template;
+export interface ITemplate {
+  header: string | (() => string) | (() => Promise<string>);
+  release:
+    | string
+    | ((data: IChangelog) => string)
+    | ((data: IChangelog) => Promise<string>);
 }
 
-function defaultChangelog(data: IChangelog) {
-  return `
-## [${data.version}] - ${data.date}
+const defaultTemplate = {
+  header: '# Changelog',
+  release(data: IChangelog) {
+    return `
+    ## [${data.version}] - ${data.date}
 
-${data.commits.map((commit) => {
-  return `- ${commit.content.description} [${commit.meta.author}]`;
-})}
-  `.trim();
+    ${data.commits.map((commit) => {
+      return `- ${commit.content.description} [${commit.meta.author}]`;
+    })}
+    `.trim();
+  },
+};
+
+async function generateChangelog(template: ITemplate): Promise<string> {
+  if (typeof template.header !== 'string') {
+    return Promise.resolve(template.header());
+  }
+  return template.header;
 }
 
-export { generateChangelog, defaultChangelog };
+export default generateChangelog;
+export { defaultTemplate };

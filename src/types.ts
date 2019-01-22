@@ -26,9 +26,26 @@ export interface ISemanticVersionTag {
 }
 
 export interface IRepoMeta {
+  host: string;
+  owner: string;
+  repository: string;
+}
+
+export interface IRelease {
+  context: IPackageMeta;
+  version: ISemanticVersionTag;
+  commits: ({ meta: ICommitMeta; content: ICommitContent })[];
+}
+
+export interface IPackageMeta {
   dir: string;
   name: string;
   version: string;
   private: boolean;
   previousTag: ISemanticVersionTag;
+}
+
+export interface IConfig {
+  dryRun: boolean;
+  genChangelog: (currentChangelog: string, release: IRelease) => string;
 }

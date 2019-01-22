@@ -2,7 +2,7 @@
 import childProcess from 'child_process';
 import path from 'path';
 import semanticVersion from './semantic-version';
-import { IRepoMeta } from './types';
+import { IPackageMeta } from './types';
 import afs from './utils/afs';
 import findUp from './utils/find-up';
 import gitUtils, { GitBranchStatus } from './git/gitUtils';
@@ -69,7 +69,7 @@ async function findPkgJson() {
     PACKAGE_JSON_REGEX.test(file)
   );
 
-  const repoMetas: IRepoMeta[] = [];
+  const packageMetas: IPackageMeta[] = [];
   const initialVersion = {
     versionStr: '0.1.0',
     major: 0,
@@ -88,7 +88,7 @@ async function findPkgJson() {
         logger.fatal('no package name found');
       }
 
-      repoMetas.push({
+      packageMetas.push({
         dir,
         name: pkgJson.name,
         version: pkgJson.version,
@@ -98,22 +98,22 @@ async function findPkgJson() {
     })
   );
 
-  if (repoMetas.length === 0) {
+  if (packageMetas.length === 0) {
     logger.fatal('no package.json file found');
   }
-  const isMonoRepo = repoMetas.length > 1;
+  const isMonoRepo = packageMetas.length > 1;
 
   if (!isMonoRepo) {
-    repoMetas[0].previousTag.name = undefined;
+    packageMetas[0].previousTag.name = undefined;
   }
 
   const existingTags = await gitUtils.getAllTags();
 
   interface IPkgNameToRepoMeta {
-    [key: string]: IRepoMeta;
+    [key: string]: IPackageMeta;
   }
   const nameToData: IPkgNameToRepoMeta = {};
-  repoMetas.forEach((repoMeta) => {
+  packageMetas.forEach((repoMeta) => {
     nameToData[repoMeta.name] = repoMeta;
   });
   if (isMonoRepo) {
@@ -130,7 +130,7 @@ async function findPkgJson() {
       }
     });
   } else if (existingTags.length > 0) {
-    const repoMeta = repoMetas[0];
+    const repoMeta = packageMetas[0];
     const tag = existingTags[0];
     nameToData[repoMeta.name].previousTag = tag;
   }

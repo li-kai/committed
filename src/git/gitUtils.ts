@@ -1,7 +1,7 @@
 import childProcess from 'child_process';
 import os from 'os';
 import path from 'path';
-import { ICommitMeta, ISemanticVersionTag } from '../types';
+import { ICommitMeta, ISemanticVersionTag, IRepoMeta } from '../types';
 
 /**
  * E2E tests for git, because we want to execute against
@@ -161,6 +161,24 @@ async function fetchRemote() {
   return gitCmd(['remote', 'update']);
 }
 
+async function getRemoteUrl() {
+  return gitCmd(['config', 'remote.origin.url']);
+}
+
+// Adapted from https://github.com/tj/node-github-url-from-git
+function getGitHubUrlFromGitUrl(url: string): IRepoMeta | null {
+  const re = /github.com:?\/?(?<owner>[\w-]+)\/(?<repository>[\w-]+)(?:.git)?(?:#[\w-.]+)?$/;
+  const match = re.exec(url);
+  if (match && match.groups) {
+    return {
+      host: 'https://github.com',
+      owner: match.groups.owner,
+      repository: match.groups.repository,
+    };
+  }
+  return null;
+}
+
 export default {
   getGitRootPath,
   getGitHooksPath,
@@ -170,4 +188,6 @@ export default {
   getBranchName,
   getBranchStatus,
   fetchRemote,
+  getRemoteUrl,
+  getGitHubUrlFromGitUrl,
 };

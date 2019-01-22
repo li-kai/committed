@@ -20,6 +20,9 @@
         "test": "jest",
         "lint": "tslint -p ."
     },
+    "optionalDependencies": {
+        "prettier": "^1.8.0"
+    },
     "devDependencies": {
         "@types/jest": "^23.3.13",
         "@types/node": "^10.12.18",

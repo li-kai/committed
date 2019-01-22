@@ -99,7 +99,7 @@ async function findPkgJson() {
   );
 
   if (packageMetas.length === 0) {
-    logger.fatal('no package.json file found');
+    return logger.fatal('no package.json file found');
   }
   const isMonoRepo = packageMetas.length > 1;
 

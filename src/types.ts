@@ -31,18 +31,18 @@ export interface IRepoMeta {
   repository: string;
 }
 
-export interface IRelease {
-  context: IPackageMeta;
-  version: ISemanticVersionTag;
-  commits: ({ meta: ICommitMeta; content: ICommitContent })[];
-}
-
 export interface IPackageMeta {
   dir: string;
   name: string;
   version: string;
   private: boolean;
   previousTag: ISemanticVersionTag;
+}
+
+export interface IRelease {
+  context: IPackageMeta & IRepoMeta;
+  version: ISemanticVersionTag;
+  commits: ({ meta: ICommitMeta; content: ICommitContent })[];
 }
 
 export interface IConfig {

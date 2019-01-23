@@ -2,13 +2,14 @@
 import childProcess from 'child_process';
 import path from 'path';
 import semanticVersion from './semantic-version';
-import { IPackageMeta } from './types';
+import { IPackageMeta, IRelease, IConfig } from './types';
 import afs from './utils/afs';
 import findUp from './utils/find-up';
 import gitUtils, { GitBranchStatus } from './git/gitUtils';
 import npmUtils from './npm/npmUtils';
 import isCommittedHook from './utils/is-committed-hook';
 import pathExists from './utils/path-exists';
+import getConfig from './config/config';
 import logger from './utils/logger';
 import * as strings from './utils/strings';
 
@@ -61,7 +62,9 @@ async function linkHook(sourceHook: string, targetHook: string) {
   }
 }
 
-async function findPkgJson() {
+async function release() {}
+
+async function findPkgJson(): Promise<IPackageMeta[]> {
   const PACKAGE_JSON_REGEX = /package\.json$/;
   const filePaths = await gitUtils.getFilesFromHead();
 
@@ -101,27 +104,31 @@ async function findPkgJson() {
   if (packageMetas.length === 0) {
     return logger.fatal('no package.json file found');
   }
-  const isMonoRepo = packageMetas.length > 1;
 
+  const isMonoRepo = packageMetas.length > 1;
   if (!isMonoRepo) {
     packageMetas[0].previousTag.name = undefined;
   }
+  return packageMetas;
+}
 
+async function getLatestTagsForPackages(
+  packageMetas: IPackageMeta[]
+): Promise<IPackageMeta[]> {
   const existingTags = await gitUtils.getAllTags();
 
-  interface IPkgNameToRepoMeta {
-    [key: string]: IPackageMeta;
-  }
-  const nameToData: IPkgNameToRepoMeta = {};
+  const nameToData: { [key: string]: IPackageMeta } = {};
   packageMetas.forEach((repoMeta) => {
     nameToData[repoMeta.name] = repoMeta;
   });
+
+  const isMonoRepo = packageMetas.length > 1;
   if (isMonoRepo) {
+    // Obtain the latest of the different packages' tag
     existingTags.forEach((tag) => {
       const tagName = tag.name;
       if (tagName === undefined) {
-        logger.fatal('No tag name given');
-        return;
+        return logger.fatal('No tag name given');
       }
 
       const data = nameToData[tagName];
@@ -130,32 +137,71 @@ async function findPkgJson() {
       }
     });
   } else if (existingTags.length > 0) {
+    // Simply take the first tag, as it is sorted already
     const repoMeta = packageMetas[0];
     const tag = existingTags[0];
     nameToData[repoMeta.name].previousTag = tag;
   }
 
-  await Promise.all(
-    Object.values(nameToData).map(async (data) => {
+  return Object.values(nameToData);
+}
+
+async function getReleaseData(
+  packageMetas: IPackageMeta[]
+): Promise<IRelease[]> {
+  const remoteUrl = await gitUtils.getRemoteUrl();
+  const repoMeta = gitUtils.getGitHubUrlFromGitUrl(remoteUrl);
+  if (repoMeta == null) {
+    return logger.fatal('No upstream url obtained');
+  }
+
+  return Promise.all(
+    packageMetas.map(async (data) => {
       const previousTag = data.previousTag!;
       let previousTagString;
       if (previousTag && previousTag.versionStr) {
         previousTagString = previousTag.versionStr;
       }
-      const commits = await gitUtils.getCommitsFromRef(previousTagString);
-      const parsedCommits = commits.map((commit) =>
-        semanticVersion.parseCommit(commit.content)
-      );
+      const commitMetas = await gitUtils.getCommitsFromRef(previousTagString);
+      const commits = commitMetas.map((commitMeta) => {
+        return {
+          meta: commitMeta,
+          content: semanticVersion.parseCommit(commitMeta.content),
+        };
+      });
 
-      const versionBumps = parsedCommits.map(
-        (parsedCommit) => parsedCommit.proposedVersionBump
+      const versionBumps = commits.map(
+        (cmt) => cmt.content.proposedVersionBump
       );
       const maxVersionBump = semanticVersion.getVersionBump(versionBumps);
       const newVersion = semanticVersion.increaseVersionBump(
         previousTag,
         maxVersionBump
       );
+
+      return {
+        context: { ...data, ...repoMeta },
+        version: newVersion,
+        commits,
+      };
     })
+  );
+}
+
+async function generateChangelog(config: IConfig) {
+  let changelog = '';
+  // try {
+  //   changelog = await afs.readFile('../', 'utf8');
+  // } catch (error) {
+  //   return logger.fatal(error);
+  // }
+
+  const pkgJsons = await findPkgJson();
+  const tags = await getLatestTagsForPackages(pkgJsons);
+  const releases = await getReleaseData(tags);
+
+  return Promise.all(
+    releases.map((release) => config.genChangelog(changelog, release))
   );
 }
 
@@ -183,9 +229,14 @@ async function linkFiles() {
   return findPkgJson();
 }
 
-linkFiles().catch((err) => {
-  console.error(err);
-});
+getConfig('')
+  .then((config) => generateChangelog(config))
+  .then((changelog) => {
+    console.log(changelog[0]);
+  })
+  .catch((err) => {
+    console.error(err);
+  });
 
 async function main() {
   // 1. Verify git, npm login presence

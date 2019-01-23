@@ -47,5 +47,8 @@ export interface IRelease {
 
 export interface IConfig {
   dryRun: boolean;
-  genChangelog: (currentChangelog: string, release: IRelease) => string;
+  genChangelog: (
+    currentChangelog: string,
+    release: IRelease
+  ) => Promise<string> | string;
 }

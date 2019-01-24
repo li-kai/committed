@@ -3,12 +3,17 @@ import genChangelog, {
   formatWithPrettier,
 } from './genChangelog';
 import fixtures from '../__fixtures__/fixtures';
+import { advanceTo } from 'jest-date-mock';
 import prettier from 'prettier';
 import { VersionBump } from '../types';
 
 const releaseCommits = [fixtures.releaseCommitA, fixtures.releaseCommitB];
 
 describe('genChangelog', () => {
+  beforeAll(() => {
+    advanceTo(); // To start of epoch
+  });
+
   it("generates a commit's markdown", () => {
     const currentChangelog = '';
 
@@ -21,7 +26,7 @@ describe('genChangelog', () => {
       .toMatchInlineSnapshot(`
 "# Changelog
 
-## 0.1.0 - Jan 23, 2019
+## 0.1.0 - Jan 1, 1970
 
 ### Breaking Changes
 

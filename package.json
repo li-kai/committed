@@ -28,6 +28,7 @@
         "@types/node": "^10.12.18",
         "@types/prettier": "^1.15.2",
         "jest": "^23.6.0",
+        "jest-date-mock": "^1.0.7",
         "memfs": "^2.14.2",
         "prettier": "^1.16.0",
         "terser": "^3.14.1",

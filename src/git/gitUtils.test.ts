@@ -6,7 +6,7 @@
 import path from 'path';
 import gitUtils, { GitBranchStatus } from './gitUtils';
 
-describe('git', () => {
+describe('gitUtils', () => {
   it('should return git root path', async () => {
     const repoRoot = path.resolve(__dirname, '..', '..');
     await expect(gitUtils.getGitRootPath()).resolves.toEqual(repoRoot);

@@ -1,0 +1,18 @@
+language: node_js
+
+git:
+  depth: false
+
+os:
+  - linux
+  - osx
+  - windows
+
+dist: xenial
+
+before_install:
+  - git checkout "$TRAVIS_BRANCH"
+  - curl -o- -L https://yarnpkg.com/install.sh | bash
+  - export PATH="$HOME/.yarn/bin:$PATH"
+
+cache: yarn

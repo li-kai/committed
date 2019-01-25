@@ -7,7 +7,7 @@ export interface ICommitMeta {
   content: string;
 }
 
-export interface ICommitContent {
+export interface IConventionalCommit {
   type: string;
   scope: string | undefined;
   description: string;
@@ -18,11 +18,14 @@ export interface ICommitContent {
 
 export interface ISemanticVersionTag {
   name: string | undefined;
-  versionStr: string;
   major: number;
   minor: number;
   patch: number;
-  prerelease: string | undefined;
+  preReleaseName: string | undefined;
+  preReleaseVersion: number | undefined;
+  toString(): string;
+  getVersionString(): string;
+  bump(type: VersionBump): ISemanticVersionTag;
 }
 
 export interface IRepoMeta {
@@ -42,7 +45,7 @@ export interface IPackageMeta {
 export interface IRelease {
   context: IPackageMeta & IRepoMeta;
   version: ISemanticVersionTag;
-  commits: ({ meta: ICommitMeta; content: ICommitContent })[];
+  commits: ({ meta: ICommitMeta; content: IConventionalCommit })[];
 }
 
 export interface IConfig {

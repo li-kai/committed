@@ -71,44 +71,7 @@ async function getCommitsFromRef(fromHash?: string): Promise<ICommitMeta[]> {
   return commits;
 }
 
-// Follows yarn/npm specific version syntax e.g. pkg@1.12.0
-const NAME_REGEX = /(?:(?<name>.+)@)?/;
-const VERSION_REGEX = new RegExp(`${NAME_REGEX.source}(?<version>.+)`);
-// https://semver.org/
-const MAJOR_REGEX = /(?<major>\d+)/;
-const MINOR_REGEX = /(?<minor>\d+)/;
-const PATCH_REGEX = /(?<patch>\d+)/;
-const PRERELEASE_REGEX = /(?:-(?<prerelease>[\w.]+))?/;
-const SEMANTIC_VERSIONING_REGEX = new RegExp(
-  `${MAJOR_REGEX.source}.${MINOR_REGEX.source}.${PATCH_REGEX.source}${
-    PRERELEASE_REGEX.source
-  }`
-);
-
-function getSemanticVersionFromString(str: string): ISemanticVersionTag | null {
-  const versionMatch = VERSION_REGEX.exec(str);
-  if (!versionMatch || !versionMatch.groups) {
-    return null;
-  }
-  const versionGroups = versionMatch.groups;
-  const semanticMatch = SEMANTIC_VERSIONING_REGEX.exec(versionGroups.version);
-  if (!semanticMatch || !semanticMatch.groups) {
-    return null;
-  }
-  const semanticGroups = semanticMatch.groups;
-
-  const semanticVersion: ISemanticVersionTag = {
-    name: versionGroups.name,
-    versionStr: versionGroups.version,
-    major: parseInt(semanticGroups.major, 10),
-    minor: parseInt(semanticGroups.minor, 10),
-    patch: parseInt(semanticGroups.patch, 10),
-    prerelease: semanticGroups.prerelease,
-  };
-  return semanticVersion;
-}
-
-async function getAllTags(): Promise<ISemanticVersionTag[]> {
+async function getAllTags(): Promise<string[]> {
   // https://stackoverflow.com/a/52680984/4819795
   const str = await gitCmd([
     '-c',
@@ -118,17 +81,8 @@ async function getAllTags(): Promise<ISemanticVersionTag[]> {
     '--format=%(refname:lstrip=2)',
     'refs/tags',
   ]);
-  const lines: ISemanticVersionTag[] = [];
 
-  str.split(os.EOL).forEach((line) => {
-    const versionResult = getSemanticVersionFromString(line);
-    if (!versionResult) {
-      return;
-    }
-    lines.push(versionResult);
-  });
-
-  return lines;
+  return str.split(os.EOL);
 }
 
 export const enum GitBranchStatus {

@@ -6,15 +6,13 @@ const FEAT_HEADER = '### Feature';
 const FIX_HEADER = '### Bug Fixes';
 
 async function genChangelog(currentChangelog: string, release: IRelease) {
-  let newReleaseChangelog = '';
-
   const date = new Date().toLocaleDateString(undefined, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
     timeZone: 'UTC',
   });
-  newReleaseChangelog = `## ${release.version.versionStr} - ${date}`;
+  let newReleaseChangelog = `## ${release.version.getVersionString()} - ${date}`;
 
   const commitsByType = getCommitsByType(release.commits, {
     breakingChangesFirst: true,
@@ -36,7 +34,7 @@ async function genChangelog(currentChangelog: string, release: IRelease) {
       if (b === 'fix') return 1;
       return a.localeCompare(b);
     })
-    .map((type) => {
+    .forEach((type) => {
       let typeHeader = `#### ${type[0].toUpperCase()}${type.slice(1)}`;
 
       if (type === 'breakingChanges') {
@@ -49,8 +47,7 @@ async function genChangelog(currentChangelog: string, release: IRelease) {
 
       const body = commitsByType[type].map(genCommitStr).join('\n');
       newReleaseChangelog = `${newReleaseChangelog}\n${typeHeader}\n${body}`;
-    })
-    .join('\n');
+    });
 
   // Remove header, and append new content
   const previousChangelog = currentChangelog.slice(0, HEADER.length);

@@ -63,14 +63,7 @@ Array [
     const tags = await gitUtils.getAllTags();
     expect(tags.slice(-3)).toMatchInlineSnapshot(`
 Array [
-  Object {
-    "major": 0,
-    "minor": 0,
-    "name": undefined,
-    "patch": 0,
-    "prerelease": undefined,
-    "versionStr": "0.0.0",
-  },
+  "0.0.0",
 ]
 `);
   });

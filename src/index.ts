@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 import childProcess from 'child_process';
 import path from 'path';
-import semanticVersion from './semantic-version';
+import SemanticVersionTag, {
+  INITIAL_SEMANTIC_VERSION_TAG,
+  getVersionBump,
+  parseCommit,
+} from './SemanticVersionTag';
 import { IPackageMeta, IRelease, IConfig } from './types';
 import afs from './utils/afs';
 import findUp from './utils/find-up';
@@ -73,13 +77,6 @@ async function findPkgJson(): Promise<IPackageMeta[]> {
   );
 
   const packageMetas: IPackageMeta[] = [];
-  const initialVersion = {
-    versionStr: '0.1.0',
-    major: 0,
-    minor: 1,
-    patch: 0,
-    prerelease: undefined,
-  };
 
   await Promise.all(
     pkgJsonPaths.map(async (filePath) => {
@@ -96,7 +93,7 @@ async function findPkgJson(): Promise<IPackageMeta[]> {
         name: pkgJson.name,
         version: pkgJson.version,
         private: pkgJson.private === true,
-        previousTag: { name: pkgJson.name, ...initialVersion },
+        previousTag: INITIAL_SEMANTIC_VERSION_TAG,
       });
     })
   );
@@ -115,7 +112,14 @@ async function findPkgJson(): Promise<IPackageMeta[]> {
 async function getLatestTagsForPackages(
   packageMetas: IPackageMeta[]
 ): Promise<IPackageMeta[]> {
-  const existingTags = await gitUtils.getAllTags();
+  const rawTags = await gitUtils.getAllTags();
+  const existingTags = rawTags.map((tagString) => {
+    const tag = SemanticVersionTag.parse(tagString);
+    if (tag == null) {
+      return logger.fatal(`Invalid tag found: ${tagString}`);
+    }
+    return tag;
+  });
 
   const nameToData: { [key: string]: IPackageMeta } = {};
   packageMetas.forEach((repoMeta) => {
@@ -158,26 +162,21 @@ async function getReleaseData(
   return Promise.all(
     packageMetas.map(async (data) => {
       const previousTag = data.previousTag!;
-      let previousTagString;
-      if (previousTag && previousTag.versionStr) {
-        previousTagString = previousTag.versionStr;
-      }
-      const commitMetas = await gitUtils.getCommitsFromRef(previousTagString);
+      const commitMetas = await gitUtils.getCommitsFromRef(
+        previousTag.toString()
+      );
       const commits = commitMetas.map((commitMeta) => {
         return {
           meta: commitMeta,
-          content: semanticVersion.parseCommit(commitMeta.content),
+          content: parseCommit(commitMeta.content),
         };
       });
 
       const versionBumps = commits.map(
         (cmt) => cmt.content.proposedVersionBump
       );
-      const maxVersionBump = semanticVersion.getVersionBump(versionBumps);
-      const newVersion = semanticVersion.increaseVersionBump(
-        previousTag,
-        maxVersionBump
-      );
+      const maxVersionBump = getVersionBump(versionBumps);
+      const newVersion = previousTag.bump(maxVersionBump);
 
       return {
         context: { ...data, ...repoMeta },

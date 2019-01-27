@@ -1,13 +1,15 @@
 {
     "extends": [
-        "tslint:latest",
+        "tslint:recommended",
         "tslint-config-prettier",
         "tslint-plugin-prettier"
     ],
     "rules": {
-        "prettier": [true, ".prettierrc.js", { "editorconfig": false }],
-        "no-console": false,
+        "curly": [true, "ignore-same-line"],
         "interface-over-type-literal": false,
-        "object-literal-sort-keys": false
+        "no-console": false,
+        "no-this-assignment": [true, { "allow-destructuring": true }],
+        "object-literal-sort-keys": false,
+        "prettier": [true, ".prettierrc.js", { "editorconfig": false }]
     }
 }

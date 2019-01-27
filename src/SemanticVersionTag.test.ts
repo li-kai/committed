@@ -1,5 +1,4 @@
-import SemanticVersionTag from './SemanticVersionTag';
-import { parseCommit, getVersionBump } from './SemanticVersionTag';
+import SemanticVersionTag, { getVersionBump } from './SemanticVersionTag';
 
 const patch: 'patch' = 'patch';
 const minor: 'minor' = 'minor';
@@ -131,92 +130,6 @@ describe('SemanticVersionTag', () => {
         preReleaseVersion: 2,
       });
     });
-  });
-});
-
-const typeAndDesc = 'fix: something';
-const typeAndScopeAndDesc = 'fix(bug): something';
-const headerWithBody = ['fix: something', '', 'content'].join('\n');
-const headerAndBreakingBody = [
-  'fix: something',
-  '',
-  'BREAKING CHANGE: content',
-].join('\n');
-const headerAndBodyAndBreakingFooter = [
-  'fix: something',
-  '',
-  'content',
-  '',
-  'BREAKING CHANGE: content',
-].join('\n');
-
-describe('semanticVersion.getCommit', () => {
-  it('should turn a header into normalized object', () => {
-    expect(parseCommit(typeAndDesc)).toMatchObject({
-      body: undefined,
-      description: 'something',
-      footer: undefined,
-      scope: undefined,
-      type: 'fix',
-    });
-  });
-
-  it('should turn a header with scope into an object', () => {
-    expect(parseCommit(typeAndScopeAndDesc)).toMatchObject({
-      body: undefined,
-      description: 'something',
-      footer: undefined,
-      scope: 'bug',
-      type: 'fix',
-    });
-  });
-
-  it('should turn a header with body into an object', () => {
-    expect(parseCommit(headerWithBody)).toMatchObject({
-      body: 'content',
-      description: 'something',
-      footer: undefined,
-      scope: undefined,
-      type: 'fix',
-    });
-  });
-
-  it('should turn a header with breaking changes in body into an object', () => {
-    expect(parseCommit(headerAndBreakingBody)).toMatchObject({
-      body: 'content',
-      description: 'something',
-      footer: undefined,
-      scope: undefined,
-      type: 'fix',
-    });
-  });
-
-  it('should turn a header with breaking changes into an object', () => {
-    expect(parseCommit(headerAndBodyAndBreakingFooter)).toMatchObject({
-      body: 'content',
-      description: 'something',
-      footer: 'content',
-      scope: undefined,
-      type: 'fix',
-    });
-  });
-
-  function pickVersionBump(str: string) {
-    return parseCommit(str).proposedVersionBump;
-  }
-
-  it('should propose major for breaking', () => {
-    expect(pickVersionBump(headerAndBreakingBody)).toEqual('major');
-    expect(pickVersionBump(headerAndBodyAndBreakingFooter)).toEqual('major');
-  });
-
-  it('should propose minor for features', () => {
-    expect(pickVersionBump('feat: something')).toEqual('minor');
-  });
-
-  it('should propose patch for anything else', () => {
-    expect(pickVersionBump(typeAndDesc)).toEqual('patch');
-    expect(pickVersionBump(typeAndScopeAndDesc)).toEqual('patch');
   });
 });
 

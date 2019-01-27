@@ -1,9 +1,8 @@
 import path from 'path';
 import gitUtils from '../git/gitUtils';
-import pathExists from '../utils/path-exists';
 import afs from '../utils/afs';
 import logger from '../utils/logger';
-//registry.npmjs.org/:_authToken=${NPM_TOKEN}
+import pathExists from '../utils/path-exists';
 
 /**
  * Checks if there is a npmrc file, else,
@@ -21,11 +20,14 @@ async function ensureAuth(npmrcPath?: string): Promise<boolean> {
   logger.debug(`npmrcPath: ${filePath}`);
 
   const npmrcPathExists = await pathExists(filePath);
-  if (npmrcPathExists) return true;
+  if (npmrcPathExists) {
+    return true;
+  }
 
   if (process.env.NPM_TOKEN) {
     await afs.writeFile(
       filePath,
+      // tslint:disable-next-line:no-invalid-template-strings
       '//registry.npmjs.org/:_authToken=${NPM_TOKEN}'
     );
 

@@ -37,22 +37,28 @@ describe('gitUtils', () => {
     expect(commits.slice(-3)).toMatchInlineSnapshot(`
 Array [
   Object {
-    "author": "Li Kai",
-    "content": "chore: add style config",
-    "hash": "03216e2b64939c8182b4d83644257d4c3d2acaa4",
-    "ts": "1547280107",
+    "meta": Object {
+      "author": "Li Kai",
+      "hash": "03216e2b64939c8182b4d83644257d4c3d2acaa4",
+      "ts": "1547280107",
+    },
+    "rawString": "chore: add style config",
   },
   Object {
-    "author": "Li Kai",
-    "content": "chore: add MIT license",
-    "hash": "75957492161e55efff8b7bcad8685f6a689cff4d",
-    "ts": "1547269242",
+    "meta": Object {
+      "author": "Li Kai",
+      "hash": "75957492161e55efff8b7bcad8685f6a689cff4d",
+      "ts": "1547269242",
+    },
+    "rawString": "chore: add MIT license",
   },
   Object {
-    "author": "Li Kai",
-    "content": "chore: add essential config files",
-    "hash": "277f77bf87c950cfae6f2eaf917ee191aef61742",
-    "ts": "1547269128",
+    "meta": Object {
+      "author": "Li Kai",
+      "hash": "277f77bf87c950cfae6f2eaf917ee191aef61742",
+      "ts": "1547269128",
+    },
+    "rawString": "chore: add essential config files",
   },
 ]
 `);

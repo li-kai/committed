@@ -1,28 +1,37 @@
-import { IRelease } from '../types';
+import { IConventionalCommit, ISemanticVersionTag } from '../types';
 
 const HEADER = '# Changelog';
+const UNRELEASED_HEADER = '## Unreleased';
 const BREAKING_CHANGE_HEADER = '### Breaking Changes';
 const FEAT_HEADER = '### Feature';
 const FIX_HEADER = '### Bug Fixes';
 
-async function genChangelog(currentChangelog: string, release: IRelease) {
-  const date = new Date().toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    timeZone: 'UTC',
-  });
-  let newReleaseChangelog = `## ${release.version.getVersionString()} - ${date}`;
+type ConventionalChangelogDetails = {
+  version?: ISemanticVersionTag;
+  commits: IConventionalCommit[];
+};
 
-  const commitsByType = getCommitsByType(release.commits, {
+async function genChangelog(
+  currentChangelog: string,
+  details: ConventionalChangelogDetails
+) {
+  let newChangelog = '';
+
+  if (details.version) {
+    const date = new Date().toLocaleDateString(undefined, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    });
+    newChangelog = `## ${details.version.getVersionString()} - ${date}`;
+  } else {
+    newChangelog = UNRELEASED_HEADER;
+  }
+
+  const commitsByType = getCommitsByType(details.commits, {
     breakingChangesFirst: true,
   });
-
-  const genCommitStr = (commit: IRelease['commits'][0]) => {
-    const { content, meta } = commit;
-    const scope = content.scope ? `**${content.scope}:** ` : '';
-    return `${scope}${content.description} (${meta.hash.slice(0, 7)})`;
-  };
 
   Object.keys(commitsByType)
     .sort((a, b) => {
@@ -45,33 +54,36 @@ async function genChangelog(currentChangelog: string, release: IRelease) {
         typeHeader = FIX_HEADER;
       }
 
-      const body = commitsByType[type].map(genCommitStr).join('\n');
-      newReleaseChangelog = `${newReleaseChangelog}\n${typeHeader}\n${body}`;
+      const body = commitsByType[type]
+        .map((commit: IConventionalCommit) => {
+          const { meta, scope, description } = commit;
+          const scopeStr = scope ? `**${scope}:** ` : '';
+          return `${scopeStr}${description} (${meta.hash.slice(0, 7)})`;
+        })
+        .join('\n');
+      newChangelog = `${newChangelog}\n${typeHeader}\n${body}`;
     });
 
   // Remove header, and append new content
   const previousChangelog = currentChangelog.slice(0, HEADER.length);
-  let changelog = `${HEADER}\n${newReleaseChangelog}${previousChangelog}`;
+  const changelog = `${HEADER}\n${newChangelog}${previousChangelog}`;
 
   return formatWithPrettier(changelog);
 }
 
 function getCommitsByType(
-  commits: IRelease['commits'],
+  commits: IConventionalCommit[],
   options?: { breakingChangesFirst: boolean }
 ) {
   const commitsByKey: { [key: string]: typeof commits } = {};
 
   commits.forEach((commit) => {
-    let key = commit.content.type;
-    if (
-      options &&
-      options.breakingChangesFirst &&
-      commit.content.proposedVersionBump === 'major'
-    ) {
+    let key = commit.type;
+    if (options && options.breakingChangesFirst && commit.hasBreakingChange) {
       key = 'breakingChanges';
     }
-    commitsByKey[key] = (commitsByKey[key] || []).concat(commit);
+    commitsByKey[key] = commitsByKey[key] || [];
+    commitsByKey[key].push(commit);
   });
 
   return commitsByKey;
@@ -80,6 +92,7 @@ function getCommitsByType(
 // Format with prettier, if there exists a prettier plugin
 async function formatWithPrettier(str: string): Promise<string> {
   try {
+    // tslint:disable-next-line:no-implicit-dependencies
     const prettier = await import('prettier');
     return prettier.format(str, { parser: 'markdown' });
   } catch {

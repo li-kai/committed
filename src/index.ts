@@ -1,72 +1,16 @@
 #!/usr/bin/env node
-import childProcess from 'child_process';
 import path from 'path';
-import SemanticVersionTag, {
-  INITIAL_SEMANTIC_VERSION_TAG,
-  getVersionBump,
-  parseCommit,
-} from './SemanticVersionTag';
-import { IPackageMeta, IRelease, IConfig } from './types';
-import afs from './utils/afs';
-import findUp from './utils/find-up';
+import getConfig from './config/config';
+import ConventionalCommit from './ConventionalCommit';
 import gitUtils, { GitBranchStatus } from './git/gitUtils';
 import npmUtils from './npm/npmUtils';
-import isCommittedHook from './utils/is-committed-hook';
-import pathExists from './utils/path-exists';
-import getConfig from './config/config';
+import SemanticVersionTag, {
+  getVersionBump,
+  INITIAL_SEMANTIC_VERSION_TAG,
+} from './SemanticVersionTag';
+import { IConfig, IPackageMeta, ISemanticRelease } from './types';
+import afs from './utils/afs';
 import logger from './utils/logger';
-import * as strings from './utils/strings';
-
-/**
- * Ensure that git is installed before proceeding
- */
-childProcess.execFile('git', ['--version'], (error) => {
-  if (error) {
-    logger.fatal(strings.gitNotFoundMessage);
-  }
-});
-
-// Only client side hooks listed in
-// https://git-scm.com/docs/githooks
-const hooksList = [
-  'applypatch-msg',
-  'pre-applypatch',
-  'post-applypatch',
-  'pre-commit',
-  'prepare-commit-msg',
-  'commit-msg',
-  'post-commit',
-  'pre-rebase',
-  'post-checkout',
-  'post-merge',
-  'pre-push',
-];
-
-async function linkHook(sourceHook: string, targetHook: string) {
-  try {
-    const sourceHookExists = await pathExists(sourceHook);
-    if (!sourceHookExists) {
-      return;
-    }
-
-    await afs.symlink(sourceHook, targetHook);
-    await afs.chmod(sourceHook, '0755');
-    console.log(strings.installedHook(sourceHook, targetHook));
-  } catch (error) {
-    if (error.code !== 'EEXIST') {
-      console.error(error);
-      return;
-    }
-
-    if (isCommittedHook(targetHook)) {
-      console.log(strings.installedHook(sourceHook, targetHook));
-    } else {
-      console.warn(strings.skippingHook(targetHook));
-    }
-  }
-}
-
-async function release() {}
 
 async function findPkgJson(): Promise<IPackageMeta[]> {
   const PACKAGE_JSON_REGEX = /package\.json$/;
@@ -152,7 +96,7 @@ async function getLatestTagsForPackages(
 
 async function getReleaseData(
   packageMetas: IPackageMeta[]
-): Promise<IRelease[]> {
+): Promise<ISemanticRelease[]> {
   const remoteUrl = await gitUtils.getRemoteUrl();
   const repoMeta = gitUtils.getGitHubUrlFromGitUrl(remoteUrl);
   if (repoMeta == null) {
@@ -162,18 +106,13 @@ async function getReleaseData(
   return Promise.all(
     packageMetas.map(async (data) => {
       const previousTag = data.previousTag!;
-      const commitMetas = await gitUtils.getCommitsFromRef(
-        previousTag.toString()
+      const commits = await gitUtils.getCommitsFromRef(previousTag.toString());
+      const conventionalCommits = commits.map((commit) =>
+        ConventionalCommit.parse(commit)
       );
-      const commits = commitMetas.map((commitMeta) => {
-        return {
-          meta: commitMeta,
-          content: parseCommit(commitMeta.content),
-        };
-      });
 
-      const versionBumps = commits.map(
-        (cmt) => cmt.content.proposedVersionBump
+      const versionBumps = conventionalCommits.map(
+        (cmt) => cmt.versionBumpType
       );
       const maxVersionBump = getVersionBump(versionBumps);
       const newVersion = previousTag.bump(maxVersionBump);
@@ -181,14 +120,14 @@ async function getReleaseData(
       return {
         context: { ...data, ...repoMeta },
         version: newVersion,
-        commits,
+        commits: conventionalCommits,
       };
     })
   );
 }
 
 async function generateChangelog(config: IConfig) {
-  let changelog = '';
+  const changelog = '';
   // try {
   //   changelog = await afs.readFile('../', 'utf8');
   // } catch (error) {
@@ -202,30 +141,6 @@ async function generateChangelog(config: IConfig) {
   return Promise.all(
     releases.map((release) => config.genChangelog(changelog, release))
   );
-}
-
-async function linkFiles() {
-  const gitDir = await findUp('.git');
-
-  if (gitDir == null) {
-    logger.fatal(strings.gitRepoNotFoundMessage);
-    return;
-  }
-
-  const hooksDir = path.join(gitDir, 'hooks');
-  // Ensure folder exists
-  // tslint:disable-next-line:no-empty
-  afs.mkdir(hooksDir).catch(() => {});
-
-  const hookInstallations = hooksList.map((hook) => {
-    const sourceHook = path.resolve(__dirname, `${hook}.js`);
-    const targetHook = path.resolve(hooksDir, hook);
-    return linkHook(sourceHook, targetHook);
-  });
-  await Promise.all(hookInstallations);
-
-  const rootDirPath = path.resolve(gitDir, '..');
-  return findPkgJson();
 }
 
 getConfig('')

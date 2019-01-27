@@ -1,6 +1,4 @@
-import os from 'os';
-import patterns from './patterns';
-import { IConventionalCommit, ISemanticVersionTag, VersionBump } from './types';
+import { ISemanticVersionTag, VersionBump } from './types';
 
 // Follows yarn/npm specific version syntax e.g. pkg@1.12.0
 const NAME_REGEX = /(?:(?<name>.+)@)?/;
@@ -21,16 +19,7 @@ const SEMANTIC_VERSIONING_REGEX = new RegExp(
 );
 
 class SemanticVersionTag implements ISemanticVersionTag {
-  protected constructor(
-    readonly name: string | undefined,
-    readonly major: number,
-    readonly minor: number,
-    readonly patch: number,
-    readonly preReleaseName: string | undefined,
-    readonly preReleaseVersion: number | undefined
-  ) {}
-
-  static parse(str: string): SemanticVersionTag {
+  public static parse(str: string): SemanticVersionTag {
     const versionMatch = VERSION_REGEX.exec(str);
     if (!versionMatch || !versionMatch.groups) {
       throw Error('tag format invalid');
@@ -51,11 +40,20 @@ class SemanticVersionTag implements ISemanticVersionTag {
     );
   }
 
-  isPreRelease() {
+  protected constructor(
+    readonly name: string | undefined,
+    readonly major: number,
+    readonly minor: number,
+    readonly patch: number,
+    readonly preReleaseName: string | undefined,
+    readonly preReleaseVersion: number | undefined
+  ) {}
+
+  get isPreRelease() {
     return this.preReleaseName != null;
   }
 
-  getVersionString() {
+  public getVersionString() {
     const optStr = (str: string | number | undefined, prefix: string) =>
       str ? `${prefix}${str}` : '';
 
@@ -68,7 +66,7 @@ class SemanticVersionTag implements ISemanticVersionTag {
   /**
    * Returns the full string representation of the tag, including name
    */
-  toString() {
+  public toString() {
     const name = this.name ? `${this.name}@` : '';
     return `${name}${this.getVersionString()}`;
   }
@@ -76,9 +74,10 @@ class SemanticVersionTag implements ISemanticVersionTag {
   /**
    * Increases a new tag with the appropriate version bump
    */
-  bump(type: VersionBump) {
-    let { name, major, minor, patch, preReleaseName, preReleaseVersion } = this;
-    if (this.isPreRelease()) {
+  public bump(type: VersionBump) {
+    const { name, preReleaseName } = this;
+    let { major, minor, patch, preReleaseVersion } = this;
+    if (this.isPreRelease) {
       preReleaseVersion = (preReleaseVersion || 0) + 1;
     } else if (type === 'major') {
       major++;
@@ -100,56 +99,6 @@ class SemanticVersionTag implements ISemanticVersionTag {
 
 const INITIAL_SEMANTIC_VERSION_TAG = SemanticVersionTag.parse('0.1.0')!;
 
-function parseCommit(commitStr: string): IConventionalCommit {
-  const lines = commitStr.replace(os.EOL, '\n').split('\n');
-
-  const header = lines[0];
-  const match = patterns.HEADER.exec(header);
-
-  if (!match || !match.groups) {
-    throw new Error('No header');
-  }
-
-  let { type, scope, description } = match.groups;
-  let body;
-  let footer;
-  let proposedVersionBump: VersionBump = 'patch';
-
-  if (type === 'feat') {
-    proposedVersionBump = 'minor';
-  }
-
-  function parseContent(content: string) {
-    const contentMatch = patterns.BODY.exec(content);
-
-    if (!contentMatch || !contentMatch.groups) {
-      throw new Error('No content');
-    }
-
-    if (contentMatch.groups.breakingChange) {
-      proposedVersionBump = 'major';
-    }
-    return contentMatch.groups.content;
-  }
-
-  if (lines.length >= 3) {
-    body = parseContent(lines[2]);
-  }
-
-  if (lines.length >= 5) {
-    footer = parseContent(lines[4]);
-  }
-
-  return {
-    type,
-    scope,
-    description,
-    body,
-    footer,
-    proposedVersionBump,
-  };
-}
-
 /**
  * Returns the largest version type recommended in that range
  */
@@ -167,4 +116,4 @@ function getVersionBump(versionBumps: VersionBump[]): VersionBump {
 }
 
 export default SemanticVersionTag;
-export { parseCommit, getVersionBump, INITIAL_SEMANTIC_VERSION_TAG };
+export { getVersionBump, INITIAL_SEMANTIC_VERSION_TAG };

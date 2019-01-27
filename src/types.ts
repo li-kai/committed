@@ -4,16 +4,21 @@ export interface ICommitMeta {
   hash: string;
   author: string;
   ts: string;
-  content: string;
 }
 
-export interface IConventionalCommit {
+export interface ICommit {
+  meta: ICommitMeta;
+  rawString: string;
+}
+
+export interface IConventionalCommit extends ICommit {
   type: string;
   scope: string | undefined;
   description: string;
   body: string | undefined;
   footer: string | undefined;
-  proposedVersionBump: VersionBump;
+  versionBumpType: VersionBump;
+  hasBreakingChange: boolean;
 }
 
 export interface ISemanticVersionTag {
@@ -23,6 +28,7 @@ export interface ISemanticVersionTag {
   patch: number;
   preReleaseName: string | undefined;
   preReleaseVersion: number | undefined;
+  isPreRelease: boolean;
   toString(): string;
   getVersionString(): string;
   bump(type: VersionBump): ISemanticVersionTag;
@@ -42,16 +48,16 @@ export interface IPackageMeta {
   previousTag: ISemanticVersionTag;
 }
 
-export interface IRelease {
+export interface ISemanticRelease {
   context: IPackageMeta & IRepoMeta;
   version: ISemanticVersionTag;
-  commits: ({ meta: ICommitMeta; content: IConventionalCommit })[];
+  commits: IConventionalCommit[];
 }
 
 export interface IConfig {
   dryRun: boolean;
   genChangelog: (
     currentChangelog: string,
-    release: IRelease
+    release: ISemanticRelease
   ) => Promise<string> | string;
 }

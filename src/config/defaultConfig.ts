@@ -1,5 +1,5 @@
-import { IConfig } from '../types';
 import genChangelog from '../changelog/genChangelog';
+import { IConfig } from '../types';
 
 const defaultConfig: IConfig = {
   dryRun: false,

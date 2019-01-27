@@ -4,7 +4,7 @@ import npmUtils from './npmUtils';
 jest.mock('fs');
 
 describe('npmUtils', () => {
-  let NPM_TOKEN = process.env.NPM_TOKEN;
+  const NPM_TOKEN = process.env.NPM_TOKEN;
   const testToken = 'test_token';
 
   beforeAll(() => {

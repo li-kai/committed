@@ -1,7 +1,7 @@
 import childProcess from 'child_process';
 import os from 'os';
 import path from 'path';
-import { ICommitMeta, ISemanticVersionTag, IRepoMeta } from '../types';
+import { ICommit, IRepoMeta } from '../types';
 
 /**
  * E2E tests for git, because we want to execute against
@@ -38,14 +38,14 @@ async function getFilesFromHead() {
 }
 
 const COMMIT_REGEX = /commit (?<hash>\w+)\n(?<author>.+)\n(?<ts>\d+)\n(?<content>[\S\s]+)\n/;
-async function getCommitsFromRef(fromHash?: string): Promise<ICommitMeta[]> {
+async function getCommitsFromRef(fromHash?: string): Promise<ICommit[]> {
   const str = await gitCmd([
     'rev-list',
     '--first-parent',
     `--format=%an%n%at%n%B%x00`,
     fromHash ? `${fromHash}..HEAD` : 'HEAD',
   ]);
-  const commits: ICommitMeta[] = [];
+  const commits: ICommit[] = [];
 
   str
     .replace(os.EOL, '\n')
@@ -61,10 +61,12 @@ async function getCommitsFromRef(fromHash?: string): Promise<ICommitMeta[]> {
       }
 
       commits.push({
-        hash: groups.hash,
-        author: groups.author,
-        ts: groups.ts,
-        content: groups.content,
+        rawString: groups.content,
+        meta: {
+          hash: groups.hash,
+          author: groups.author,
+          ts: groups.ts,
+        },
       });
     });
 

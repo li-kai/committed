@@ -1,10 +1,6 @@
-import {
-  ISemanticVersionTag,
-  IPackageMeta,
-  IRepoMeta,
-  VersionBump,
-  IRelease,
-} from '../types';
+import ConventionalCommit from '../ConventionalCommit';
+import SemanticVersionTag from '../SemanticVersionTag';
+import { IPackageMeta, IRepoMeta, ISemanticVersionTag } from '../types';
 
 const defaultRepoMeta: IRepoMeta = {
   host: 'https://github.com',
@@ -12,14 +8,9 @@ const defaultRepoMeta: IRepoMeta = {
   repository: 'committed',
 };
 
-const defaultTag: ISemanticVersionTag = {
-  name: '@ones-io/main',
-  versionStr: '0.1.0',
-  major: 0,
-  minor: 1,
-  patch: 0,
-  prerelease: undefined,
-};
+const defaultTag: ISemanticVersionTag = SemanticVersionTag.parse(
+  '@ones-io/package@0.1.0'
+);
 
 const defaultPackageMeta: IPackageMeta = {
   dir: '.',
@@ -33,52 +24,43 @@ const commitMetaA = {
   hash: 'asdfasdfasdfa',
   author: 'a',
   ts: '123123121',
-  content: 'feat: test',
 };
 
-const commitContentA = {
-  type: 'feat',
-  scope: undefined,
-  description: 'test',
-  body: undefined,
-  footer: undefined,
-  proposedVersionBump: 'major' as VersionBump,
-};
-
-const releaseCommitA: IRelease['commits'][0] = {
+const releaseCommitA = ConventionalCommit.parse({
   meta: commitMetaA,
-  content: commitContentA,
-};
+  rawString: 'feat: commit a',
+});
 
 const commitMetaB = {
   hash: 'asdfasdfasdfa',
   author: 'b',
   ts: '123123122',
-  content: 'fix: test',
 };
 
-const commitContentB = {
-  type: 'fix',
-  scope: undefined,
-  description: 'test',
-  body: undefined,
-  footer: undefined,
-  proposedVersionBump: 'minor' as VersionBump,
-};
-
-const releaseCommitB: IRelease['commits'][0] = {
+const releaseCommitB = ConventionalCommit.parse({
   meta: commitMetaB,
-  content: commitContentB,
+  rawString: 'fix: commit b',
+});
+
+const commitMetaC = {
+  hash: 'asdfasdfasdfa',
+  author: 'c',
+  ts: '123123122',
 };
+
+const releaseCommitC = ConventionalCommit.parse({
+  meta: commitMetaC,
+  rawString: 'fix: commit c\n\nBREAKING CHANGE: something',
+});
 
 export default {
   defaultRepoMeta,
   defaultTag,
   defaultPackageMeta,
   commitMetaA,
-  commitContentA,
   releaseCommitA,
   commitMetaB,
-  commitContentB,
   releaseCommitB,
+  commitMetaC,
+  releaseCommitC,
 };

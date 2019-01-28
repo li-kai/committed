@@ -63,7 +63,7 @@ async function generate(
         .map((commit: IConventionalCommit) => {
           const { meta, scope, description } = commit;
           const scopeStr = scope ? `**${scope}:** ` : '';
-          return `${scopeStr}${description} (${meta.hash.slice(0, 7)})`;
+          return ` - ${scopeStr}${description} (${meta.hash.slice(0, 7)})`;
         })
         .join('\n');
       newChangelog = `${newChangelog}\n${typeHeader}\n${body}`;

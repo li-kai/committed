@@ -8,7 +8,7 @@ const releaseCommits = [
   fixtures.releaseCommitC,
 ];
 
-describe('genChangelog', () => {
+describe('conventionalChangelog.genChangelog', () => {
   beforeAll(() => {
     advanceTo(); // To start of epoch
   });
@@ -29,15 +29,15 @@ describe('genChangelog', () => {
 
 ### Breaking Changes
 
-commit c (asdfasd)
+- commit c (asdfasd)
 
 ### Feature
 
-commit a (asdfasd)
+- commit a (asdfasd)
 
 ### Bug Fixes
 
-commit b (asdfasd)
+- commit b (asdfasd)
 "
 `);
   });

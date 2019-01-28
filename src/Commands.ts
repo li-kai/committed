@@ -1,9 +1,10 @@
 import path from 'path';
+import getConfig from './config/config';
 import afs from './utils/afs';
-import findUp from './utils/find-up';
+import { findUp, pathExists } from './utils/fileSystemUtils';
 import isCommittedHook from './utils/is-committed-hook';
 import logger from './utils/logger';
-import pathExists from './utils/path-exists';
+import packageJsonUtils from './utils/packageJsonUtils';
 import * as strings from './utils/strings';
 
 // Only client side hooks listed in
@@ -71,15 +72,43 @@ function commit() {
   return;
 }
 
-function changelog() {
-  // TODO: generate changelog
-  return;
+async function changelog(dirPath?: string): Promise<void[]> {
+  const config = await getConfig(dirPath || '');
+  const pkgJsons = await packageJsonUtils.getSemanticVersionPkgMetas(dirPath);
+  const releases = await packageJsonUtils.getSemanticReleaseData(pkgJsons);
+  const releasePromises = releases.map(async (releaseData) => {
+    const changelogPath = path.join(releaseData.context.dir, 'CHANGELOG.md');
+    const changelogContent = await afs
+      .readFile(changelogPath, 'utf8')
+      .catch(() => '');
+    const newChangelogContent = await config.genChangelog(
+      changelogContent,
+      releaseData
+    );
+    return afs.writeFile(changelogPath, newChangelogContent);
+  });
+  return Promise.all(releasePromises);
 }
 
-function release() {
-  // TODO: release packages
-  return;
+async function release(dirPath?: string): Promise<void[]> {
+  const config = await getConfig(dirPath || '');
+  const pkgJsons = await packageJsonUtils.getSemanticVersionPkgMetas(dirPath);
+  const releases = await packageJsonUtils.getSemanticReleaseData(pkgJsons);
+  const releasePromises = releases.map(async (releaseData) => {
+    const changelogPath = path.join(releaseData.context.dir, 'CHANGELOG.md');
+    const changelogContent = await afs
+      .readFile(changelogPath, 'utf8')
+      .catch(() => '');
+    const newChangelogContent = await config.genChangelog(
+      changelogContent,
+      releaseData
+    );
+    return afs.writeFile(changelogPath, newChangelogContent);
+  });
+  return Promise.all(releasePromises);
 }
+
+changelog();
 
 function uninstall() {
   // TODO: remove hooks

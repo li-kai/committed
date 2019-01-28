@@ -1,6 +1,10 @@
 import conventionalCommit from '../conventionalCommit';
 import semanticVersionTag from '../semanticVersionTag';
-import { IPackageMeta, IRepoMeta, ISemanticVersionTag } from '../types';
+import {
+  IRepoMeta,
+  ISemanticVersionPackageMeta,
+  ISemanticVersionTag,
+} from '../types';
 
 const defaultRepoMeta: IRepoMeta = {
   host: 'https://github.com',
@@ -12,12 +16,12 @@ const defaultTag: ISemanticVersionTag = semanticVersionTag.parse(
   '@ones-io/package@0.1.0'
 );
 
-const defaultPackageMeta: IPackageMeta = {
+const defaultPackageMeta: ISemanticVersionPackageMeta = {
   dir: '.',
   name: '@ones-io/main',
   version: '0.2.0',
   private: false,
-  previousTag: defaultTag,
+  tag: defaultTag,
 };
 
 const commitMetaA = {

@@ -1,8 +1,8 @@
 import path from 'path';
-import gitUtils from './gitUtils';
 import afs from './afs';
+import { pathExists } from './fileSystemUtils';
+import gitUtils from './gitUtils';
 import logger from './logger';
-import {pathExists} from './fileSystemUtils';
 
 /**
  * Checks if there is a npmrc file, else,

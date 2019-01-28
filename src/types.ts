@@ -40,7 +40,10 @@ export interface IPackageMeta {
   readonly name: string;
   readonly version: string;
   readonly private: boolean;
-  readonly previousTag: ISemanticVersionTag;
+}
+
+export interface ISemanticVersionPackageMeta extends IPackageMeta {
+  readonly tag: ISemanticVersionTag;
 }
 
 export interface ISemanticRelease {

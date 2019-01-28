@@ -70,7 +70,7 @@ async function generate(
     });
 
   // Remove header, and append new content
-  const previousChangelog = currentChangelog.slice(0, HEADER.length);
+  const previousChangelog = currentChangelog.slice(HEADER.length);
   const changelog = `${HEADER}\n${newChangelog}${previousChangelog}`;
 
   return formatWithPrettier(changelog);

@@ -41,4 +41,33 @@ describe('conventionalChangelog.genChangelog', () => {
 "
 `);
   });
+
+  it('writes twice but replaces header', () => {
+    const currentChangelog = '# Changelog';
+
+    const release = {
+      context: { ...fixtures.defaultPackageMeta, ...fixtures.defaultRepoMeta },
+      version: fixtures.defaultTag,
+      commits: releaseCommits,
+    };
+    expect(conventionalChangelog.generate(currentChangelog, release)).resolves
+      .toMatchInlineSnapshot(`
+"# Changelog
+
+## 0.1.0 - Jan 1, 1970
+
+### Breaking Changes
+
+- commit c (asdfasd)
+
+### Feature
+
+- commit a (asdfasd)
+
+### Bug Fixes
+
+- commit b (asdfasd)
+"
+`);
+  });
 });

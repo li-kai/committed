@@ -3,6 +3,9 @@ import os from 'os';
 import path from 'path';
 import { ICommit, IRepoMeta } from '../types';
 
+// Windows may give carriage return, but not always
+const NEW_LINE = os.platform() === 'win32' ? /\n\r?/ : /\n/;
+
 /**
  * E2E tests for git, because we want to execute against
  * the real git repo in order to test.
@@ -28,13 +31,18 @@ async function getGitHooksPath() {
   return path.join(process.cwd(), dotGitPath, 'hooks');
 }
 
-function getGitRootPath() {
-  return gitCmd(['rev-parse', '--show-toplevel']);
+async function getGitRootPath() {
+  const rootPath = await gitCmd(['rev-parse', '--show-toplevel']);
+  return path.normalize(rootPath);
 }
 
 async function getFilesFromHead() {
   const str = await gitCmd(['ls-tree', '-r', 'HEAD', '--name-only']);
-  return str.split(os.EOL);
+  return str.split(NEW_LINE);
+}
+
+async function getStagedFiles() {
+  return gitCmd(['diff', '--staged', '--cached']);
 }
 
 const COMMIT_REGEX = /commit (?<hash>\w+)\n(?<author>.+)\n(?<ts>\d+)\n(?<content>[\S\s]+)\n/;
@@ -48,7 +56,7 @@ async function getCommitsFromRef(fromHash?: string): Promise<ICommit[]> {
   const commits: ICommit[] = [];
 
   str
-    .replace(os.EOL, '\n')
+    .replace(NEW_LINE, '\n')
     .split('\x00\n')
     .forEach((commit) => {
       const result = COMMIT_REGEX.exec(commit);
@@ -84,7 +92,7 @@ async function getAllTags(): Promise<string[]> {
     'refs/tags',
   ]);
 
-  return str.split(os.EOL);
+  return str.split(NEW_LINE);
 }
 
 export const enum GitBranchStatus {
@@ -139,6 +147,7 @@ export default {
   getGitRootPath,
   getGitHooksPath,
   getFilesFromHead,
+  getStagedFiles,
   getCommitsFromRef,
   getAllTags,
   getBranchName,

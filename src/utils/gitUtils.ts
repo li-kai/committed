@@ -1,7 +1,7 @@
 import childProcess from 'child_process';
 import os from 'os';
 import path from 'path';
-import { ICommit, IRepoMeta } from '../../types';
+import { ICommit, IRepoMeta } from '../types';
 
 // Windows may give carriage return, but not always
 const NEW_LINE = os.platform() === 'win32' ? /\n\r?/ : /\n/;

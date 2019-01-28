@@ -1,4 +1,6 @@
 import { IConventionalCommit, ISemanticVersionTag } from '../types';
+import conventionalCommit from '../conventionalCommit';
+import semanticVersionTag from '../semanticVersionTag';
 
 const HEADER = '# Changelog';
 const UNRELEASED_HEADER = '## Unreleased';
@@ -24,7 +26,9 @@ async function genChangelog(
       year: 'numeric',
       timeZone: 'UTC',
     });
-    newChangelog = `## ${details.version.getVersionString()} - ${date}`;
+    newChangelog = `## ${semanticVersionTag.getVersionString(
+      details.version
+    )} - ${date}`;
   } else {
     newChangelog = UNRELEASED_HEADER;
   }
@@ -79,7 +83,11 @@ function getCommitsByType(
 
   commits.forEach((commit) => {
     let key = commit.type;
-    if (options && options.breakingChangesFirst && commit.hasBreakingChange) {
+    if (
+      options &&
+      options.breakingChangesFirst &&
+      conventionalCommit.hasBreakingChange(commit)
+    ) {
       key = 'breakingChanges';
     }
     commitsByKey[key] = commitsByKey[key] || [];

@@ -1,4 +1,4 @@
-import SemanticVersionTag, { getVersionBump } from './SemanticVersionTag';
+import semanticVersionTag from './semanticVersionTag';
 
 const patch: 'patch' = 'patch';
 const minor: 'minor' = 'minor';
@@ -12,137 +12,138 @@ const tagObj = {
   preReleaseVersion: undefined,
 };
 
-describe('SemanticVersionTag', () => {
-  describe('parse', () => {
-    it('should parse valid semantic patch versions', () => {
-      expect(SemanticVersionTag.parse('0.0.1')).toMatchObject({
-        ...tagObj,
-        patch: 1,
-      });
-    });
-
-    it('should parse valid semantic minor versions', () => {
-      expect(SemanticVersionTag.parse('0.1.0')).toMatchObject({
-        ...tagObj,
-        minor: 1,
-      });
-    });
-
-    it('should parse valid semantic major versions', () => {
-      expect(SemanticVersionTag.parse('1.0.0')).toMatchObject({
-        ...tagObj,
-        major: 1,
-      });
-    });
-
-    it('should parse valid package names', () => {
-      expect(SemanticVersionTag.parse('committed@0.0.0')).toMatchObject({
-        ...tagObj,
-        name: 'committed',
-      });
-      expect(
-        SemanticVersionTag.parse('@ones-io/committed@0.0.0')
-      ).toMatchObject({
-        ...tagObj,
-        name: '@ones-io/committed',
-      });
-    });
-
-    it('should parse simple prerelease versions', () => {
-      expect(SemanticVersionTag.parse('0.0.0-rc')).toMatchObject({
-        ...tagObj,
-        preReleaseName: 'rc',
-      });
-      expect(SemanticVersionTag.parse('0.0.0-beta.32')).toMatchObject({
-        ...tagObj,
-        preReleaseName: 'beta',
-        preReleaseVersion: 32,
-      });
-    });
-
-    it('should throw error on invalid tags', () => {
-      expect(() => SemanticVersionTag.parse('0.0-rc')).toThrowError();
-      expect(() => SemanticVersionTag.parse('@sd0.0.0')).toThrowError();
-      expect(() => SemanticVersionTag.parse('sd0-alphaweuir#(')).toThrowError();
-      expect(() => SemanticVersionTag.parse('-1..0.0')).toThrowError();
+describe('semanticVersionTag.parse', () => {
+  it('should parse valid semantic patch versions', () => {
+    expect(semanticVersionTag.parse('0.0.1')).toMatchObject({
+      ...tagObj,
+      patch: 1,
     });
   });
 
-  describe('toString', () => {
+  it('should parse valid semantic minor versions', () => {
+    expect(semanticVersionTag.parse('0.1.0')).toMatchObject({
+      ...tagObj,
+      minor: 1,
+    });
+  });
+
+  it('should parse valid semantic major versions', () => {
+    expect(semanticVersionTag.parse('1.0.0')).toMatchObject({
+      ...tagObj,
+      major: 1,
+    });
+  });
+
+  it('should parse valid package names', () => {
+    expect(semanticVersionTag.parse('committed@0.0.0')).toMatchObject({
+      ...tagObj,
+      name: 'committed',
+    });
+    expect(semanticVersionTag.parse('@ones-io/committed@0.0.0')).toMatchObject({
+      ...tagObj,
+      name: '@ones-io/committed',
+    });
+  });
+
+  it('should parse simple prerelease versions', () => {
+    expect(semanticVersionTag.parse('0.0.0-rc')).toMatchObject({
+      ...tagObj,
+      preReleaseName: 'rc',
+    });
+    expect(semanticVersionTag.parse('0.0.0-beta.32')).toMatchObject({
+      ...tagObj,
+      preReleaseName: 'beta',
+      preReleaseVersion: 32,
+    });
+  });
+
+  it('should throw error on invalid tags', () => {
+    expect(() => semanticVersionTag.parse('0.0-rc')).toThrowError();
+    expect(() => semanticVersionTag.parse('@sd0.0.0')).toThrowError();
+    expect(() => semanticVersionTag.parse('sd0-alphaweuir#(')).toThrowError();
+    expect(() => semanticVersionTag.parse('-1..0.0')).toThrowError();
+  });
+});
+
+describe('semanticVersionTag string utils', () => {
+  const str = 'committed@0.0.0';
+  const tag = semanticVersionTag.parse(str);
+  const str2 = '@ones-io/committed@0.0.0';
+  const tag2 = semanticVersionTag.parse(str2);
+  const str3 = '@ones-io/committed@0.0.0-alpha.32';
+  const tag3 = semanticVersionTag.parse(str3);
+
+  describe('semanticVersionTag.toString', () => {
     it('should give back full string', () => {
-      const str = 'committed@0.0.0';
-      expect(SemanticVersionTag.parse(str).toString()).toEqual(str);
-      const str2 = '@ones-io/committed@0.0.0';
-      expect(SemanticVersionTag.parse(str2).toString()).toEqual(str2);
-      const str3 = '@ones-io/committed@0.0.0-alpha.32';
-      expect(SemanticVersionTag.parse(str3).toString()).toEqual(str3);
+      expect(semanticVersionTag.toString(tag)).toEqual(str);
+      expect(semanticVersionTag.toString(tag2)).toEqual(str2);
+      expect(semanticVersionTag.toString(tag3)).toEqual(str3);
     });
   });
 
-  describe('getVersionString', () => {
+  describe('semanticVersionTag.getVersionString', () => {
     it('should give version portion only', () => {
-      const str = 'committed@0.0.0';
-      expect(SemanticVersionTag.parse(str).getVersionString()).toEqual('0.0.0');
-      const str2 = '@ones-io/committed@0.0.0';
-      expect(SemanticVersionTag.parse(str2).getVersionString()).toEqual(
-        '0.0.0'
-      );
-      const str3 = '@ones-io/committed@0.0.0-alpha.32';
-      expect(SemanticVersionTag.parse(str3).getVersionString()).toEqual(
+      expect(semanticVersionTag.getVersionString(tag)).toEqual('0.0.0');
+      expect(semanticVersionTag.getVersionString(tag2)).toEqual('0.0.0');
+      expect(semanticVersionTag.getVersionString(tag3)).toEqual(
         '0.0.0-alpha.32'
       );
     });
   });
+});
 
-  describe('bump', () => {
-    const tag = SemanticVersionTag.parse('0.0.0');
-    const preReleaseTag = SemanticVersionTag.parse('0.0.0-alpha');
+describe('semanticVersionTag.bump', () => {
+  const tag = semanticVersionTag.parse('0.0.0');
+  const preReleaseTag = semanticVersionTag.parse('0.0.0-alpha');
 
-    it('should increase major version accordingly', () => {
-      expect(tag.bump(major)).toMatchObject({
-        ...tagObj,
-        major: 1,
-      });
+  it('should increase major version accordingly', () => {
+    expect(semanticVersionTag.bump(tag, major)).toMatchObject({
+      ...tagObj,
+      major: 1,
     });
+  });
 
-    it('should increase minor version accordingly', () => {
-      expect(tag.bump(minor)).toMatchObject({
-        ...tagObj,
-        minor: 1,
-      });
+  it('should increase minor version accordingly', () => {
+    expect(semanticVersionTag.bump(tag, minor)).toMatchObject({
+      ...tagObj,
+      minor: 1,
     });
+  });
 
-    it('should increase patch version accordingly', () => {
-      expect(tag.bump(patch)).toMatchObject({
-        ...tagObj,
-        patch: 1,
-      });
+  it('should increase patch version accordingly', () => {
+    expect(semanticVersionTag.bump(tag, patch)).toMatchObject({
+      ...tagObj,
+      patch: 1,
     });
+  });
 
-    it('should increase prerelease version accordingly', () => {
-      const bumped = preReleaseTag.bump(patch);
-      expect(bumped).toMatchObject({
-        ...tagObj,
-        preReleaseName: 'alpha',
-        preReleaseVersion: 1,
-      });
-      expect(bumped.bump('major')).toMatchObject({
-        preReleaseVersion: 2,
-      });
+  it('should increase prerelease version accordingly', () => {
+    const bumped = semanticVersionTag.bump(preReleaseTag, patch);
+    expect(bumped).toMatchObject({
+      ...tagObj,
+      preReleaseName: 'alpha',
+      preReleaseVersion: 1,
+    });
+    expect(semanticVersionTag.bump(bumped, 'major')).toMatchObject({
+      preReleaseVersion: 2,
     });
   });
 });
 
-describe('semanticVersion.getVersionBump', () => {
+describe('semanticVersionTag.getVersionBump', () => {
   it('should get patch if there are only patches', () => {
-    expect(getVersionBump([patch, patch])).toEqual(patch);
+    expect(semanticVersionTag.getVersionBump([patch, patch])).toEqual(patch);
   });
 
   it('should get minor if there is no major', () => {
-    expect(getVersionBump([patch, patch, minor, patch])).toEqual(minor);
+    expect(
+      semanticVersionTag.getVersionBump([patch, patch, minor, patch])
+    ).toEqual(minor);
   });
 
   it('should get major if there is any major', () => {
-    expect(getVersionBump([patch, major, minor, patch])).toEqual(major);
+    expect(
+      semanticVersionTag.getVersionBump([patch, major, minor, patch])
+    ).toEqual(major);
   });
 });

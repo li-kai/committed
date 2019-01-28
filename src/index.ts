@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 import path from 'path';
 import getConfig from './config/config';
-import ConventionalCommit from './ConventionalCommit';
+import conventionalCommit from './conventionalCommit';
 import gitUtils, { GitBranchStatus } from './git/gitUtils';
 import npmUtils from './npm/npmUtils';
-import SemanticVersionTag, {
-  getVersionBump,
+import semanticVersionTag, {
   INITIAL_SEMANTIC_VERSION_TAG,
-} from './SemanticVersionTag';
+} from './semanticVersionTag';
 import { IConfig, IPackageMeta, ISemanticRelease } from './types';
 import afs from './utils/afs';
 import logger from './utils/logger';
@@ -58,7 +57,7 @@ async function getLatestTagsForPackages(
 ): Promise<IPackageMeta[]> {
   const rawTags = await gitUtils.getAllTags();
   const existingTags = rawTags.map((tagString) => {
-    const tag = SemanticVersionTag.parse(tagString);
+    const tag = semanticVersionTag.parse(tagString);
     if (tag == null) {
       return logger.fatal(`Invalid tag found: ${tagString}`);
     }
@@ -108,14 +107,14 @@ async function getReleaseData(
       const previousTag = data.previousTag!;
       const commits = await gitUtils.getCommitsFromRef(previousTag.toString());
       const conventionalCommits = commits.map((commit) =>
-        ConventionalCommit.parse(commit)
+        conventionalCommit.parse(commit)
       );
 
       const versionBumps = conventionalCommits.map(
         (cmt) => cmt.versionBumpType
       );
-      const maxVersionBump = getVersionBump(versionBumps);
-      const newVersion = previousTag.bump(maxVersionBump);
+      const maxVersionBump = semanticVersionTag.getVersionBump(versionBumps);
+      const newVersion = semanticVersionTag.bump(previousTag, maxVersionBump);
 
       return {
         context: { ...data, ...repoMeta },

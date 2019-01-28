@@ -1,5 +1,5 @@
-import ConventionalCommit from '../ConventionalCommit';
-import SemanticVersionTag from '../SemanticVersionTag';
+import conventionalCommit from '../conventionalCommit';
+import semanticVersionTag from '../semanticVersionTag';
 import { IPackageMeta, IRepoMeta, ISemanticVersionTag } from '../types';
 
 const defaultRepoMeta: IRepoMeta = {
@@ -8,7 +8,7 @@ const defaultRepoMeta: IRepoMeta = {
   repository: 'committed',
 };
 
-const defaultTag: ISemanticVersionTag = SemanticVersionTag.parse(
+const defaultTag: ISemanticVersionTag = semanticVersionTag.parse(
   '@ones-io/package@0.1.0'
 );
 
@@ -26,7 +26,7 @@ const commitMetaA = {
   ts: '123123121',
 };
 
-const releaseCommitA = ConventionalCommit.parse({
+const releaseCommitA = conventionalCommit.parse({
   meta: commitMetaA,
   rawString: 'feat: commit a',
 });
@@ -37,7 +37,7 @@ const commitMetaB = {
   ts: '123123122',
 };
 
-const releaseCommitB = ConventionalCommit.parse({
+const releaseCommitB = conventionalCommit.parse({
   meta: commitMetaB,
   rawString: 'fix: commit b',
 });
@@ -48,7 +48,7 @@ const commitMetaC = {
   ts: '123123122',
 };
 
-const releaseCommitC = ConventionalCommit.parse({
+const releaseCommitC = conventionalCommit.parse({
   meta: commitMetaC,
   rawString: 'fix: commit c\n\nBREAKING CHANGE: something',
 });

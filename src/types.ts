@@ -1,37 +1,32 @@
 export type VersionBump = 'major' | 'minor' | 'patch';
 
 export interface ICommitMeta {
-  hash: string;
-  author: string;
-  ts: string;
+  readonly hash: string;
+  readonly author: string;
+  readonly ts: string;
 }
 
 export interface ICommit {
-  meta: ICommitMeta;
-  rawString: string;
+  readonly meta: ICommitMeta;
+  readonly rawString: string;
 }
 
 export interface IConventionalCommit extends ICommit {
-  type: string;
-  scope: string | undefined;
-  description: string;
-  body: string | undefined;
-  footer: string | undefined;
-  versionBumpType: VersionBump;
-  hasBreakingChange: boolean;
+  readonly type: string;
+  readonly scope: string | undefined;
+  readonly description: string;
+  readonly body: string | undefined;
+  readonly footer: string | undefined;
+  readonly versionBumpType: VersionBump;
 }
 
 export interface ISemanticVersionTag {
-  name: string | undefined;
-  major: number;
-  minor: number;
-  patch: number;
-  preReleaseName: string | undefined;
-  preReleaseVersion: number | undefined;
-  isPreRelease: boolean;
-  toString(): string;
-  getVersionString(): string;
-  bump(type: VersionBump): ISemanticVersionTag;
+  readonly name: string | undefined;
+  readonly major: number;
+  readonly minor: number;
+  readonly patch: number;
+  readonly preReleaseName: string | undefined;
+  readonly preReleaseVersion: number | undefined;
 }
 
 export interface IRepoMeta {
@@ -41,11 +36,11 @@ export interface IRepoMeta {
 }
 
 export interface IPackageMeta {
-  dir: string;
-  name: string;
-  version: string;
-  private: boolean;
-  previousTag: ISemanticVersionTag;
+  readonly dir: string;
+  readonly name: string;
+  readonly version: string;
+  readonly private: boolean;
+  readonly previousTag: ISemanticVersionTag;
 }
 
 export interface ISemanticRelease {

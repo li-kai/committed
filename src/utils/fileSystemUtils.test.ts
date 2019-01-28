@@ -1,7 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 import { vol } from 'memfs';
 import path from 'path';
-import { readdirRecursive, findUp, pathExists } from './fileSystemUtils';
+import { findUp, pathExists, readdirRecursive } from './fileSystemUtils';
 
 jest.mock('fs');
 

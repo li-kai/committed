@@ -1,7 +1,7 @@
 import childProcess from 'child_process';
 import os from 'os';
 import path from 'path';
-import { ICommit, IRepoMeta } from '../types';
+import { ICommit, IRepoMeta } from '../../types';
 
 // Windows may give carriage return, but not always
 const NEW_LINE = os.platform() === 'win32' ? /\n\r?/ : /\n/;
@@ -36,8 +36,11 @@ async function getGitRootPath() {
   return path.normalize(rootPath);
 }
 
-async function getFilesFromHead() {
-  const str = await gitCmd(['ls-tree', '-r', 'HEAD', '--name-only']);
+async function getFiles(dirPath?: string) {
+  const args = ['ls-tree', '-r', 'HEAD', '--name-only'];
+  if (dirPath) args.push(dirPath);
+
+  const str = await gitCmd(args);
   return str.split(NEW_LINE);
 }
 
@@ -146,7 +149,7 @@ function getGitHubUrlFromGitUrl(url: string): IRepoMeta | null {
 export default {
   getGitRootPath,
   getGitHooksPath,
-  getFilesFromHead,
+  getFiles,
   getStagedFiles,
   getCommitsFromRef,
   getAllTags,

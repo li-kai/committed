@@ -18,7 +18,7 @@ describe('gitUtils', () => {
   });
 
   it('should return git current head files', async () => {
-    await expect(gitUtils.getFilesFromHead()).resolves.toEqual(
+    await expect(gitUtils.getFiles()).resolves.toEqual(
       expect.arrayContaining([
         '.editorconfig',
         '.gitignore',
@@ -29,6 +29,28 @@ describe('gitUtils', () => {
         'yarn.lock',
       ])
     );
+  });
+
+  describe('gitUtils.getFiles', () => {
+    it('should return files from HEAD', async () => {
+      await expect(gitUtils.getFiles()).resolves.toEqual(
+        expect.arrayContaining([
+          '.editorconfig',
+          '.gitignore',
+          'LICENSE',
+          'README.md',
+          'package.json',
+          'src/index.ts',
+          'yarn.lock',
+        ])
+      );
+    });
+
+    it('should return files from folder when given path', async () => {
+      await expect(gitUtils.getFiles('src')).resolves.toEqual(
+        expect.arrayContaining(['src/index.ts', 'src/utils/afs.ts'])
+      );
+    });
   });
 
   it('should return all commits', async () => {

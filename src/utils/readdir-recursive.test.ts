@@ -1,5 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 import { vol } from 'memfs';
+import path from 'path';
 import readdirRecursive from './readdir-recursive';
 
 jest.mock('fs');
@@ -33,27 +34,27 @@ describe('readdirRecursive', () => {
 
   it('should return content of folder', async () => {
     await expect(readdirRecursive('/a/e')).resolves.toEqual([
-      { path: '/a/e/w.txt', isDir: false },
+      { path: path.normalize('/a/e/w.txt'), isDir: false },
     ]);
   });
 
   it('should return files recursively', async () => {
     await expect(readdirRecursive('/a')).resolves.toEqual(
       expect.arrayContaining([
-        { isDir: true, path: '/a/b' },
-        { isDir: true, path: '/a/e' },
-        { isDir: false, path: '/a/e/w.txt' },
-        { isDir: false, path: '/a/b/c/d/x.txt' },
-        { isDir: false, path: '/a/b/c/y.txt' },
-        { isDir: false, path: '/a/z.txt' },
+        { isDir: true, path: path.normalize('/a/b') },
+        { isDir: true, path: path.normalize('/a/e') },
+        { isDir: false, path: path.normalize('/a/e/w.txt') },
+        { isDir: false, path: path.normalize('/a/b/c/d/x.txt') },
+        { isDir: false, path: path.normalize('/a/b/c/y.txt') },
+        { isDir: false, path: path.normalize('/a/z.txt') },
       ])
     );
   });
 
   it('should ignore node modules', async () => {
     await expect(readdirRecursive('/b')).resolves.toEqual([
-      { isDir: true, path: '/b/c' },
-      { isDir: false, path: '/b/c/d.txt' },
+      { isDir: true, path: path.normalize('/b/c') },
+      { isDir: false, path: path.normalize('/b/c/d.txt') },
     ]);
   });
 

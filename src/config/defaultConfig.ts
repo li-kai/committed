@@ -1,9 +1,9 @@
-import genChangelog from '../changelog/genChangelog';
+import conventionalChangelog from '../changelog/conventionalChangelog';
 import { IConfig } from '../types';
 
 const defaultConfig: IConfig = {
   dryRun: false,
-  genChangelog,
+  genChangelog: conventionalChangelog.generate,
 };
 
 export default defaultConfig;

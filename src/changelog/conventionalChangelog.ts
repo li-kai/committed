@@ -1,6 +1,7 @@
-import { IConventionalCommit, ISemanticVersionTag } from '../types';
 import conventionalCommit from '../conventionalCommit';
 import semanticVersionTag from '../semanticVersionTag';
+import { IConventionalCommit, ISemanticVersionTag } from '../types';
+import { formatWithPrettier } from '../utils/formatter';
 
 const HEADER = '# Changelog';
 const UNRELEASED_HEADER = '## Unreleased';
@@ -13,7 +14,7 @@ type ConventionalChangelogDetails = {
   commits: IConventionalCommit[];
 };
 
-async function genChangelog(
+async function generate(
   currentChangelog: string,
   details: ConventionalChangelogDetails
 ) {
@@ -33,7 +34,7 @@ async function genChangelog(
     newChangelog = UNRELEASED_HEADER;
   }
 
-  const commitsByType = getCommitsByType(details.commits, {
+  const commitsByType = conventionalCommit.getCommitsByType(details.commits, {
     breakingChangesFirst: true,
   });
 
@@ -75,38 +76,6 @@ async function genChangelog(
   return formatWithPrettier(changelog);
 }
 
-function getCommitsByType(
-  commits: IConventionalCommit[],
-  options?: { breakingChangesFirst: boolean }
-) {
-  const commitsByKey: { [key: string]: typeof commits } = {};
-
-  commits.forEach((commit) => {
-    let key = commit.type;
-    if (
-      options &&
-      options.breakingChangesFirst &&
-      conventionalCommit.hasBreakingChange(commit)
-    ) {
-      key = 'breakingChanges';
-    }
-    commitsByKey[key] = commitsByKey[key] || [];
-    commitsByKey[key].push(commit);
-  });
-
-  return commitsByKey;
-}
-
-// Format with prettier, if there exists a prettier plugin
-async function formatWithPrettier(str: string): Promise<string> {
-  try {
-    // tslint:disable-next-line:no-implicit-dependencies
-    const prettier = await import('prettier');
-    return prettier.format(str, { parser: 'markdown' });
-  } catch {
-    return str;
-  }
-}
-
-export default genChangelog;
-export { getCommitsByType, formatWithPrettier };
+export default {
+  generate,
+};

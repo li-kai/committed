@@ -1,6 +1,6 @@
 import os from 'os';
-import patterns from './patterns';
 import { ICommit, IConventionalCommit, VersionBump } from './types';
+import patterns from './utils/patterns';
 
 function parse(commit: ICommit): IConventionalCommit {
   const lines = commit.rawString.replace(os.EOL, '\n').split('\n');
@@ -45,13 +45,31 @@ function parse(commit: ICommit): IConventionalCommit {
   return {
     rawString: commit.rawString,
     meta: commit.meta,
-    type: type,
-    scope: scope,
-    description: description,
-    body: body,
-    footer: footer,
+    type,
+    scope,
+    description,
+    body,
+    footer,
     versionBumpType: proposedVersionBump,
   };
+}
+
+function getCommitsByType(
+  commits: IConventionalCommit[],
+  options?: { breakingChangesFirst: boolean }
+) {
+  const commitsByKey: { [key: string]: typeof commits } = {};
+
+  commits.forEach((commit) => {
+    let key = commit.type;
+    if (options && options.breakingChangesFirst && hasBreakingChange(commit)) {
+      key = 'breakingChanges';
+    }
+    commitsByKey[key] = commitsByKey[key] || [];
+    commitsByKey[key].push(commit);
+  });
+
+  return commitsByKey;
 }
 
 function hasBreakingChange(conventionalCommit: IConventionalCommit) {
@@ -61,4 +79,5 @@ function hasBreakingChange(conventionalCommit: IConventionalCommit) {
 export default {
   parse,
   hasBreakingChange,
+  getCommitsByType,
 };

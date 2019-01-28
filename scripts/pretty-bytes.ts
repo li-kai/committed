@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 // https://github.com/sindresorhus/pretty-bytes
 const UNITS = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
@@ -34,7 +33,6 @@ export default (num: number, options: Options = {}) => {
   }
 
   const isNegative = num < 0;
-  // eslint-disable-next-line no-nested-ternary
   const prefix = isNegative ? '-' : opts.signed ? '+' : '';
 
   if (isNegative) {

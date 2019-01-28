@@ -1,4 +1,3 @@
-/* eslint-disable no-global-assign */
 import logger from './logger';
 
 jest.mock('process');

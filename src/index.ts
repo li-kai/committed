@@ -1,41 +1,7 @@
 #!/usr/bin/env node
-import path from 'path';
-import getConfig from './config/config';
-import conventionalCommit from './conventionalCommit';
-import semanticVersionTag, {
-  INITIAL_SEMANTIC_VERSION_TAG,
-} from './semanticVersionTag';
-import { IConfig, IPackageMeta, ISemanticRelease } from './types';
-import afs from './utils/afs';
 import gitUtils, { GitBranchStatus } from './utils/gitUtils';
 import logger from './utils/logger';
 import npmUtils from './utils/npmUtils';
-
-async function generateChangelog(config: IConfig) {
-  const changelog = '';
-  // try {
-  //   changelog = await afs.readFile('../', 'utf8');
-  // } catch (error) {
-  //   return logger.fatal(error);
-  // }
-
-  const pkgJsons = await findPkgJson();
-  const tags = await getLatestTagsForPackages(pkgJsons);
-  const releases = await getReleaseData(tags);
-
-  return Promise.all(
-    releases.map((release) => config.genChangelog(changelog, release))
-  );
-}
-
-getConfig('')
-  .then((config) => generateChangelog(config))
-  .then((changelog) => {
-    console.log(changelog[0]);
-  })
-  .catch((err) => {
-    console.error(err);
-  });
 
 async function main() {
   // 1. Verify git, npm login presence

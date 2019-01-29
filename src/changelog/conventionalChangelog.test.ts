@@ -21,7 +21,7 @@ describe('conventionalChangelog.genChangelog', () => {
       version: fixtures.defaultTag,
       commits: releaseCommits,
     };
-    expect(conventionalChangelog.generate(currentChangelog, release)).resolves
+    expect(conventionalChangelog.generateChangelog(currentChangelog, release)).resolves
       .toMatchInlineSnapshot(`
 "# Changelog
 
@@ -50,7 +50,7 @@ describe('conventionalChangelog.genChangelog', () => {
       version: fixtures.defaultTag,
       commits: releaseCommits,
     };
-    expect(conventionalChangelog.generate(currentChangelog, release)).resolves
+    expect(conventionalChangelog.generateChangelog(currentChangelog, release)).resolves
       .toMatchInlineSnapshot(`
 "# Changelog
 

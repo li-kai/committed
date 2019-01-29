@@ -6,6 +6,10 @@ import isCommittedHook from './utils/is-committed-hook';
 import logger from './utils/logger';
 import packageJsonUtils from './utils/packageJsonUtils';
 import * as strings from './utils/strings';
+import gitUtils from './utils/gitUtils';
+import semanticVersionTag from './semanticVersionTag';
+import npmUtils from './utils/npmUtils';
+import conventionalChangelog from './changelog/conventionalChangelog';
 
 // Only client side hooks listed in
 // https://git-scm.com/docs/githooks
@@ -103,12 +107,18 @@ async function release(dirPath?: string): Promise<void[]> {
       changelogContent,
       releaseData
     );
-    return afs.writeFile(changelogPath, newChangelogContent);
+    await afs.writeFile(changelogPath, newChangelogContent);
+    const commitNotes = conventionalChangelog.generateCommitNotes(releaseData);
+    await gitUtils.createTag(semanticVersionTag.toString(releaseData.version), commitNotes);
+    await npmUtils.publish(releaseData.context.dir, { dryRun: true });
   });
   return Promise.all(releasePromises);
 }
 
-changelog();
+release().then(() => {
+}).catch((err) => {
+  console.error(err);
+});
 
 function uninstall() {
   // TODO: remove hooks

@@ -1,7 +1,7 @@
-import childProcess from 'child_process';
 import os from 'os';
 import path from 'path';
 import { ICommit, IRepoMeta } from '../types';
+import { makeProgram } from './commandLineUtils';
 
 // Windows may give carriage return, but not always
 const NEW_LINE = os.platform() === 'win32' ? /\n\r?/ : /\n/;
@@ -10,17 +10,7 @@ const NEW_LINE = os.platform() === 'win32' ? /\n\r?/ : /\n/;
  * E2E tests for git, because we want to execute against
  * the real git repo in order to test.
  */
-function gitCmd(args: string[]): Promise<string> {
-  return new Promise((resolve, reject) => {
-    childProcess.execFile('git', args, (err, stdout) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(stdout.trimRight());
-      }
-    });
-  });
-}
+const gitCmd = makeProgram('git');
 
 function getDotGitPath() {
   return gitCmd(['rev-parse', '--git-dir']);
@@ -146,6 +136,10 @@ function getGitHubUrlFromGitUrl(url: string): IRepoMeta | null {
   return null;
 }
 
+function createTag(tagName: string, message: string) {
+  return gitCmd(['tag', '-a', tagName, '-m', message]);
+}
+
 export default {
   getGitRootPath,
   getGitHooksPath,
@@ -158,4 +152,5 @@ export default {
   fetchRemote,
   getRemoteUrl,
   getGitHubUrlFromGitUrl,
+  createTag,
 };

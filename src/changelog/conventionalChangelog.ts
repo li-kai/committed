@@ -14,30 +14,12 @@ type ConventionalChangelogDetails = {
   commits: IConventionalCommit[];
 };
 
-async function generate(
-  currentChangelog: string,
-  details: ConventionalChangelogDetails
-) {
-  let newChangelog = '';
-
-  if (details.version) {
-    const date = new Date().toLocaleDateString(undefined, {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      timeZone: 'UTC',
-    });
-    newChangelog = `## ${semanticVersionTag.getVersionString(
-      details.version
-    )} - ${date}`;
-  } else {
-    newChangelog = UNRELEASED_HEADER;
-  }
+function generateCommitNotes(details: ConventionalChangelogDetails) {
+  let notes = '';
 
   const commitsByType = conventionalCommit.getCommitsByType(details.commits, {
     breakingChangesFirst: true,
   });
-
   Object.keys(commitsByType)
     .sort((a, b) => {
       if (a === 'breakingChanges') return -1;
@@ -50,7 +32,6 @@ async function generate(
     })
     .forEach((type) => {
       let typeHeader = `#### ${type[0].toUpperCase()}${type.slice(1)}`;
-
       if (type === 'breakingChanges') {
         typeHeader = BREAKING_CHANGE_HEADER;
       } else if (type === 'feat') {
@@ -58,7 +39,6 @@ async function generate(
       } else if (type === 'fix') {
         typeHeader = FIX_HEADER;
       }
-
       const body = commitsByType[type]
         .map((commit: IConventionalCommit) => {
           const { meta, scope, description } = commit;
@@ -66,16 +46,39 @@ async function generate(
           return ` - ${scopeStr}${description} (${meta.hash.slice(0, 7)})`;
         })
         .join('\n');
-      newChangelog = `${newChangelog}\n${typeHeader}\n${body}`;
+      notes = `${notes}\n${typeHeader}\n${body}`;
     });
+  return notes;
+}
+
+async function generateChangelog(
+  currentChangelog: string,
+  details: ConventionalChangelogDetails
+) {
+  let releaseHeader = '';
+  if (details.version) {
+    const date = new Date().toLocaleDateString(undefined, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    });
+    releaseHeader = `## ${semanticVersionTag.getVersionString(
+      details.version
+    )} - ${date}`;
+  } else {
+    releaseHeader = UNRELEASED_HEADER;
+  }
 
   // Remove header, and append new content
+  const commitNotes = generateCommitNotes(details);
   const previousChangelog = currentChangelog.slice(HEADER.length);
-  const changelog = `${HEADER}\n${newChangelog}${previousChangelog}`;
+  const changelog = `${HEADER}\n${releaseHeader}${commitNotes}${previousChangelog}`;
 
   return formatWithPrettier(changelog);
 }
 
 export default {
-  generate,
+  generateCommitNotes,
+  generateChangelog,
 };

@@ -3,7 +3,7 @@ import { IConfig } from '../types';
 
 const defaultConfig: IConfig = {
   dryRun: false,
-  genChangelog: conventionalChangelog.generate,
+  genChangelog: conventionalChangelog.generateChangelog,
 };
 
 export default defaultConfig;

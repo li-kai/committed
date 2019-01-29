@@ -1,8 +1,12 @@
+import os from 'os';
 import path from 'path';
 import afs from './afs';
 import { pathExists } from './fileSystemUtils';
+import { makeProgram } from './commandLineUtils';
 import gitUtils from './gitUtils';
 import logger from './logger';
+
+const npmCmd = makeProgram(os.platform() === 'win32' ? 'npm.cmd' : 'npm');
 
 /**
  * Checks if there is a npmrc file, else,
@@ -37,4 +41,19 @@ async function ensureAuth(npmrcPath?: string): Promise<boolean> {
   return false;
 }
 
-export default { ensureAuth };
+type PublishOptions = {
+  registry?: string;
+  dryRun?: boolean;
+};
+async function publish(dirPath: string, options?: PublishOptions) {
+  const args = ['publish', dirPath];
+  if (options && options.registry) {
+    args.push('--registry', options.registry);
+  }
+  if (options && options.dryRun) {
+    args.push('--dry-run');
+  }
+  return npmCmd(args);
+}
+
+export default { ensureAuth, publish };

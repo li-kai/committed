@@ -1,15 +1,29 @@
 import path from 'path';
 import getConfig from './config/config';
+import semanticVersionTag from './semanticVersionTag';
+import conventionalChangelog from './changelog/conventionalChangelog';
+import gitUtils, { GitBranchStatus } from './utils/gitUtils';
 import afs from './utils/afs';
 import { findUp, pathExists } from './utils/fileSystemUtils';
 import isCommittedHook from './utils/is-committed-hook';
 import logger from './utils/logger';
 import packageJsonUtils from './utils/packageJsonUtils';
 import * as strings from './utils/strings';
-import gitUtils from './utils/gitUtils';
-import semanticVersionTag from './semanticVersionTag';
 import npmUtils from './utils/npmUtils';
-import conventionalChangelog from './changelog/conventionalChangelog';
+
+async function main() {
+  // 1. Verify git, npm login presence
+  const gitStatus = await gitUtils.getBranchStatus();
+  if (gitStatus === GitBranchStatus.Behind) {
+    logger.fatal('your branch is behind origin');
+  } else if (gitStatus === GitBranchStatus.Diverged) {
+    logger.fatal('your branch has diverged from origin');
+  }
+  const npmAuth = await npmUtils.ensureAuth();
+  if (!npmAuth) {
+    logger.fatal(`npm authentication not set up`);
+  }
+}
 
 // Only client side hooks listed in
 // https://git-scm.com/docs/githooks
@@ -109,16 +123,14 @@ async function release(dirPath?: string): Promise<void[]> {
     );
     await afs.writeFile(changelogPath, newChangelogContent);
     const commitNotes = conventionalChangelog.generateCommitNotes(releaseData);
-    await gitUtils.createTag(semanticVersionTag.toString(releaseData.version), commitNotes);
+    await gitUtils.createTag(
+      semanticVersionTag.toString(releaseData.version),
+      commitNotes
+    );
     await npmUtils.publish(releaseData.context.dir, { dryRun: true });
   });
   return Promise.all(releasePromises);
 }
-
-release().then(() => {
-}).catch((err) => {
-  console.error(err);
-});
 
 function uninstall() {
   // TODO: remove hooks

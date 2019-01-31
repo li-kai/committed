@@ -1,25 +1,71 @@
 #!/usr/bin/env node
-import gitUtils, { GitBranchStatus } from './utils/gitUtils';
-import logger from './utils/logger';
-import npmUtils from './utils/npmUtils';
+import path from 'path';
+import * as commands from './commands';
 
-async function main() {
-  // 1. Verify git, npm login presence
-  const gitStatus = await gitUtils.getBranchStatus();
-  if (gitStatus === GitBranchStatus.Behind) {
-    logger.fatal('your branch is behind origin');
-  } else if (gitStatus === GitBranchStatus.Diverged) {
-    logger.fatal('your branch has diverged from origin');
+type CommandStruct = {
+  description: string;
+  fn: Function;
+  args?: string[];
+};
+
+class CommandLineProgram {
+  private commandMap: { [key: string]: CommandStruct } = {};
+
+  constructor() {
+    this.command('help', 'Displays help information', () => {
+      const keys = Object.keys(this.commandMap);
+      const maxLength = Math.max(...keys.map((key) => key.length)) + 4;
+      const commandStr = keys
+        .map((key) => {
+          const desc = this.commandMap[key].description;
+          return `  ${key.padEnd(maxLength)}${desc}`;
+        })
+        .join('\n');
+      const helpStr = `Usage: committed <command> [flags]\n\n${commandStr}`;
+      console.log(helpStr);
+    });
   }
-  const npmAuth = await npmUtils.ensureAuth();
-  if (!npmAuth) {
-    logger.fatal(`npm authentication not set up`);
+
+  command = (command: string, description: string, fn: Function) => {
+    this.commandMap[command] = { description, fn };
+    return this;
+  };
+
+  execute(processArgs: string[] = process.argv) {
+    const args = processArgs.slice(2);
+
+    if (!args.length || ['help', '--help', '-h'].includes(args[0])) {
+      this.commandMap.help.fn();
+      return;
+    }
+    const [command, ...flags] = args;
+    switch (command) {
+      case '--version':
+      case '-v': {
+        const packageJsonPath = path.join(__dirname, '..', 'package.json');
+        import(packageJsonPath).then((pkgJson) => {
+          console.log(pkgJson.version);
+        });
+        break;
+      }
+      default: {
+        this.commandMap[command].fn(...flags);
+      }
+    }
   }
-  // 2. Parse git tags and obtain their latest versions
-  // 3. Check for each tag whether there are changes
-  // 4. Get version upgrade, find out if it is needed at all
-  // 5. Generate the changelogs for all the version upgrades
-  // 6. Create the git tag
-  // 7. Publish the libraries
-  // 8. Notify eternal parties (Github Releases etc)
 }
+
+new CommandLineProgram()
+  .command('install', 'Install commit linting git hooks', commands.install)
+  .command(
+    'uninstall',
+    'Uninstall commit linting git hooks',
+    commands.uninstall
+  )
+  .command(
+    'changelog',
+    'Generate changelogs for every package',
+    commands.changelog
+  )
+  .command('release', 'Release packages', commands.release)
+  .execute();

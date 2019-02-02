@@ -2,12 +2,14 @@
     "name": "@ones/committed",
     "version": "0.1.0",
     "description": "A coventional commits workflow tool",
-    "main": "src/index.js",
+    "main": "dist/index.js",
     "files": [
-        "src"
+        "dist",
+        "!dist/__**",
+        "!dist/**/*.test.*"
     ],
     "bin": {
-        "committed": "./src/index.js"
+        "committed": "dist/index.js"
     },
     "repository": "git@github.com:ones-io/committed.git",
     "license": "MIT",
@@ -16,9 +18,9 @@
     },
     "scripts": {
         "start": "ts-node src",
-        "build": "node scripts/build.js",
         "test": "jest",
-        "lint": "tslint -p ."
+        "lint": "tslint -p .",
+        "prepublish": "tsc"
     },
     "optionalDependencies": {
         "prettier": "^1.8.0"
@@ -37,6 +39,6 @@
         "tslint": "^5.12.1",
         "tslint-config-prettier": "^1.17.0",
         "tslint-plugin-prettier": "^2.0.1",
-        "typescript": "^3.2.4"
+        "typescript": "^3.3.1"
     }
 }

@@ -7,7 +7,7 @@ Formats the given number using `Number#toLocaleString`.
 - If locale is true, the system default locale is used for translation.
 - If no value for locale is specified, the number is returned unmodified.
 */
-const toLocaleString = (num: number, locale?: string | boolean): string => {
+const toLocaleString = (num, locale) => {
   let result;
   if (typeof locale === 'string') {
     result = num.toLocaleString(locale);
@@ -20,8 +20,7 @@ const toLocaleString = (num: number, locale?: string | boolean): string => {
   return result;
 };
 
-type Options = { signed?: boolean; locale?: string | boolean };
-export default (num: number, options: Options = {}) => {
+function prettyBytes(num, options = {}) {
   if (!Number.isFinite(num)) {
     throw new TypeError(`Expected a finite number, got ${typeof num}: ${num}`);
   }
@@ -52,3 +51,5 @@ export default (num: number, options: Options = {}) => {
 
   return `${prefix + numberString} ${unit}`;
 };
+
+module.exports = prettyBytes;

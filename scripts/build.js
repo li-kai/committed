@@ -1,23 +1,23 @@
-import fs from 'fs';
-import path from 'path';
-// tslint:disable-next-line:no-implicit-dependencies
-import Terser, { ECMA } from 'terser';
-import { promisify } from 'util';
-
-import prettyBytes from './pretty-bytes';
+const fs = require('fs');
+const path = require('path');
+const Terser = require('terser');
+const util = require('util');
+const prettyBytes = require('./pretty-bytes');
 
 const options = {
   warnings: true,
-  mangle: { toplevel: true },
-  ecma: 6 as ECMA,
+  mangle: {
+    toplevel: true
+  },
+  ecma: 6,
 };
 
-const readFileAsync = promisify(fs.readFile);
-const writeFileAsync = promisify(fs.writeFile);
+const readFileAsync = util.promisify(fs.readFile);
+const writeFileAsync = util.promisify(fs.writeFile);
 
-function uglify([destFilePath, srcFilePath]: string[]) {
-  let srcFileSize: string;
-  let destFileSize: string;
+function uglify([destFilePath, srcFilePath]) {
+  let srcFileSize;
+  let destFileSize;
 
   readFileAsync(path.resolve(srcFilePath), 'utf-8')
     .then((data) => {
@@ -52,8 +52,8 @@ dest: ${destFilePath} [${destFileSize}]`
 }
 
 const code = {
-  './bin/index.js': './src/index.js',
-  './bin/lint.js': './src/lint.js',
+  './bin/index.js': './dist/index.js',
+  './bin/lint.js': './dist/lint.js',
 };
 
 fs.mkdir(path.resolve('./bin'), () => {

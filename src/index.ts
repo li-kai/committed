@@ -39,18 +39,17 @@ class CommandLineProgram {
       return;
     }
     const [command, ...flags] = args;
-    switch (command) {
-      case '--version':
-      case '-v': {
-        const packageJsonPath = path.join(__dirname, '..', 'package.json');
-        import(packageJsonPath).then((pkgJson) => {
-          console.log(pkgJson.version);
-        });
-        break;
-      }
-      default: {
-        this.commandMap[command].fn(...flags);
-      }
+    if (command === '--version' || command === '-v') {
+      const packageJsonPath = path.join(__dirname, '..', 'package.json');
+      import(packageJsonPath).then((pkgJson) => {
+        console.log(pkgJson.version);
+      });
+    } else if (command in this.commandMap) {
+      this.commandMap[command].fn(...flags);
+    } else {
+      console.log(
+        `Unknown command given: '${command}'. See 'committed --help'.`
+      );
     }
   }
 }

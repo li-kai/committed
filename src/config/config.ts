@@ -7,8 +7,10 @@ import defaultConfig from './defaultConfig';
  */
 async function getConfig(rootPath: string) {
   try {
-    const config = await import(path.join(rootPath, 'committed.config.js'));
-    return { ...defaultConfig, config };
+    const configPath = path.resolve(rootPath, 'committed.config.js');
+    const fullConfig = await import(configPath);
+    const config = fullConfig.default || fullConfig;
+    return { ...defaultConfig, ...config };
   } catch (error) {
     if (error.code !== 'MODULE_NOT_FOUND') throw error;
   }

@@ -1,5 +1,7 @@
 import os from 'os';
 import path from 'path';
+import semanticVersionTag from '../semanticVersionTag';
+import { ISemanticVersionTag } from '../types';
 import afs from './afs';
 import { makeProgram } from './commandLineUtils';
 import { pathExists } from './fileSystemUtils';
@@ -56,4 +58,17 @@ async function publish(dirPath: string, options?: PublishOptions) {
   return npmCmd(args);
 }
 
-export default { ensureAuth, publish };
+async function version(
+  dirPath: string,
+  tag: ISemanticVersionTag,
+  options?: { dryRun: boolean }
+) {
+  if (options && options.dryRun) return '';
+
+  const tagVerString = semanticVersionTag.getVersionString(tag);
+  return npmCmd(['--no-git-tag-version', 'version', tagVerString], {
+    cwd: dirPath,
+  });
+}
+
+export default { ensureAuth, publish, version };

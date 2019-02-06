@@ -1,9 +1,15 @@
-import childProcess from 'child_process';
+import childProcess, { ExecFileOptionsWithStringEncoding } from 'child_process';
 
-function makeProgram(prog: string): (args: string[]) => Promise<string> {
-  return (args: string[]) =>
+type ExecFileOpts = Pick<
+  ExecFileOptionsWithStringEncoding,
+  Exclude<keyof ExecFileOptionsWithStringEncoding, 'encoding'>
+>;
+function makeProgram(prog: string) {
+  return (args: string[], options?: ExecFileOpts): Promise<string> =>
     new Promise((resolve, reject) => {
-      childProcess.execFile(prog, args, (err, stdout, stderr) => {
+      const opts = (options || {}) as ExecFileOptionsWithStringEncoding;
+      opts.encoding = 'utf8';
+      childProcess.execFile(prog, args, opts, (err, stdout, stderr) => {
         if (err) {
           reject(err);
         } else {

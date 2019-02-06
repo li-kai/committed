@@ -70,8 +70,11 @@ function bump(tag: ISemanticVersionTag, type: VersionBump) {
     preReleaseVersion = (preReleaseVersion || 0) + 1;
   } else if (type === 'major') {
     major++;
+    minor = 0;
+    patch = 0;
   } else if (type === 'minor') {
     minor++;
+    patch = 0;
   } else if (type === 'patch') {
     patch++;
   }

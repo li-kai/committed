@@ -93,34 +93,39 @@ describe('semanticVersionTag string utils', () => {
 });
 
 describe('semanticVersionTag.bump', () => {
-  const tag = semanticVersionTag.parse('0.0.0');
-  const preReleaseTag = semanticVersionTag.parse('0.0.0-alpha');
+  const tag = semanticVersionTag.parse('1.1.1');
+  const preReleaseTag = semanticVersionTag.parse('1.1.1-alpha');
 
   it('should increase major version accordingly', () => {
     expect(semanticVersionTag.bump(tag, major)).toMatchObject({
-      ...tagObj,
-      major: 1,
+      major: 2,
+      minor: 0,
+      patch: 0,
     });
   });
 
   it('should increase minor version accordingly', () => {
     expect(semanticVersionTag.bump(tag, minor)).toMatchObject({
-      ...tagObj,
-      minor: 1,
+      major: 1,
+      minor: 2,
+      patch: 0,
     });
   });
 
   it('should increase patch version accordingly', () => {
     expect(semanticVersionTag.bump(tag, patch)).toMatchObject({
-      ...tagObj,
-      patch: 1,
+      major: 1,
+      minor: 1,
+      patch: 2,
     });
   });
 
   it('should increase prerelease version accordingly', () => {
     const bumped = semanticVersionTag.bump(preReleaseTag, patch);
     expect(bumped).toMatchObject({
-      ...tagObj,
+      major: 1,
+      minor: 1,
+      patch: 1,
       preReleaseName: 'alpha',
       preReleaseVersion: 1,
     });

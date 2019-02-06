@@ -1,6 +1,7 @@
 import os from 'os';
 import path from 'path';
-import { ICommit, IRepoMeta } from '../types';
+import semanticVersionTag from '../semanticVersionTag';
+import { ICommit, IRepoMeta, ISemanticVersionTag } from '../types';
 import { makeProgram } from './commandLineUtils';
 
 // Windows may give carriage return, but not always
@@ -136,8 +137,17 @@ function getGitHubUrlFromGitUrl(url: string): IRepoMeta | null {
   return null;
 }
 
-function createTag(tagName: string, message: string) {
+function createTag(tag: ISemanticVersionTag, message: string) {
+  const tagName = semanticVersionTag.toString(tag);
   return gitCmd(['tag', '-a', tagName, '-m', message]);
+}
+
+function createCommit(message: string) {
+  return gitCmd(['commit', '-am', message]);
+}
+
+function push() {
+  return gitCmd(['push']);
 }
 
 export default {
@@ -153,4 +163,6 @@ export default {
   getRemoteUrl,
   getGitHubUrlFromGitUrl,
   createTag,
+  createCommit,
+  push,
 };

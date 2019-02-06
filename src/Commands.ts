@@ -113,21 +113,36 @@ async function release(dirPath?: string): Promise<void[]> {
   const pkgJsons = await packageJsonUtils.getSemanticVersionPkgMetas(dirPath);
   const releases = await packageJsonUtils.getSemanticReleaseData(pkgJsons);
   const releasePromises = releases.map(async (releaseData) => {
-    const changelogPath = path.join(releaseData.context.dir, 'CHANGELOG.md');
-    const changelogContent = await afs
-      .readFile(changelogPath, 'utf8')
-      .catch(() => '');
-    const newChangelogContent = await config.genChangelog(
-      changelogContent,
-      releaseData
-    );
-    await afs.writeFile(changelogPath, newChangelogContent);
-    const commitNotes = conventionalChangelog.generateCommitNotes(releaseData);
-    await gitUtils.createTag(
-      semanticVersionTag.toString(releaseData.version),
-      commitNotes
-    );
-    await npmUtils.publish(releaseData.context.dir, { dryRun: true });
+    const dir = releaseData.context.dir;
+    const changelogPath = path.join(dir, 'CHANGELOG.md');
+
+    const commitMsg = `chore(release): release ${semanticVersionTag.toString(
+      releaseData.version
+    )} [skip ci]`;
+
+    await Promise.all([
+      afs
+        .readFile(changelogPath, 'utf8')
+        .catch(() => '') // ignore if there isn't a changelog
+        .then((changelogContent) =>
+          config.genChangelog(changelogContent, releaseData)
+        )
+        .then((newChangelogContent) =>
+          afs.writeFile(changelogPath, newChangelogContent)
+        ),
+      gitUtils
+        .createCommit(commitMsg)
+        .then(() =>
+          gitUtils.createTag(
+            releaseData.version,
+            conventionalChangelog.generateCommitNotes(releaseData)
+          )
+        ),
+      npmUtils.version(dir, releaseData.version, config).then(() => {
+        npmUtils.publish(dir, config);
+      }),
+    ]);
+    gitUtils.push();
   });
   return Promise.all(releasePromises);
 }

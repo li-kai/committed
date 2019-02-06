@@ -1,8 +1,8 @@
 import os from 'os';
 import path from 'path';
 import afs from './afs';
-import { pathExists } from './fileSystemUtils';
 import { makeProgram } from './commandLineUtils';
+import { pathExists } from './fileSystemUtils';
 import gitUtils from './gitUtils';
 import logger from './logger';
 

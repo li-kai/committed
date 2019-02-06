@@ -1,15 +1,15 @@
 import path from 'path';
+import conventionalChangelog from './changelog/conventionalChangelog';
 import getConfig from './config/config';
 import semanticVersionTag from './semanticVersionTag';
-import conventionalChangelog from './changelog/conventionalChangelog';
-import gitUtils, { GitBranchStatus } from './utils/gitUtils';
 import afs from './utils/afs';
 import { findUp, pathExists } from './utils/fileSystemUtils';
+import gitUtils, { GitBranchStatus } from './utils/gitUtils';
 import isCommittedHook from './utils/is-committed-hook';
 import logger from './utils/logger';
+import npmUtils from './utils/npmUtils';
 import packageJsonUtils from './utils/packageJsonUtils';
 import * as strings from './utils/strings';
-import npmUtils from './utils/npmUtils';
 
 async function main() {
   // 1. Verify git, npm login presence

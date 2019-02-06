@@ -4,6 +4,7 @@ import * as commands from './commands';
 
 type CommandStruct = {
   description: string;
+  // tslint:disable-next-line:ban-types
   fn: Function;
   args?: string[];
 };
@@ -26,12 +27,13 @@ class CommandLineProgram {
     });
   }
 
-  command = (command: string, description: string, fn: Function) => {
+  // tslint:disable-next-line:ban-types
+  public command = (command: string, description: string, fn: Function) => {
     this.commandMap[command] = { description, fn };
     return this;
   };
 
-  execute(processArgs: string[] = process.argv) {
+  public execute(processArgs: string[] = process.argv) {
     const args = processArgs.slice(2);
 
     if (!args.length || ['help', '--help', '-h'].includes(args[0])) {

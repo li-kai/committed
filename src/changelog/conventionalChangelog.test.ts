@@ -21,8 +21,8 @@ describe('conventionalChangelog.genChangelog', () => {
       version: fixtures.defaultTag,
       commits: releaseCommits,
     };
-    expect(conventionalChangelog.generateChangelog(currentChangelog, release)).resolves
-      .toMatchInlineSnapshot(`
+    expect(conventionalChangelog.generateChangelog(currentChangelog, release))
+      .resolves.toMatchInlineSnapshot(`
 "# Changelog
 
 ## 0.1.0 - Jan 1, 1970
@@ -50,8 +50,8 @@ describe('conventionalChangelog.genChangelog', () => {
       version: fixtures.defaultTag,
       commits: releaseCommits,
     };
-    expect(conventionalChangelog.generateChangelog(currentChangelog, release)).resolves
-      .toMatchInlineSnapshot(`
+    expect(conventionalChangelog.generateChangelog(currentChangelog, release))
+      .resolves.toMatchInlineSnapshot(`
 "# Changelog
 
 ## 0.1.0 - Jan 1, 1970

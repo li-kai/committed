@@ -53,10 +53,10 @@ async function getSemanticVersionPkgMetas(
   dirPath?: string
 ): Promise<ISemanticVersionPackageMeta[]> {
   const packageMetas = await getPkgMetas(dirPath);
-  interface TempPackageMeta extends IPackageMeta {
+  interface ITempPackageMeta extends IPackageMeta {
     tag?: ISemanticVersionTag;
   }
-  const nameToData: { [key: string]: TempPackageMeta } = {};
+  const nameToData: { [key: string]: ITempPackageMeta } = {};
   packageMetas.forEach((repoMeta) => {
     nameToData[repoMeta.name] = repoMeta;
   });

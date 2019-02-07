@@ -1,4 +1,4 @@
-# Committed
+# Committed [![Build Status](https://travis-ci.com/li-kai/committed.svg?branch=master)](https://travis-ci.com/li-kai/committed)
 
 Committed is a commit linter, changelog generator, git hooks manager and package release tool all in one.
 

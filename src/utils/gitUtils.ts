@@ -19,7 +19,7 @@ function getDotGitPath() {
 
 async function getGitHooksPath() {
   const dotGitPath = await getDotGitPath();
-  return path.join(process.cwd(), dotGitPath, 'hooks');
+  return path.resolve(dotGitPath, 'hooks');
 }
 
 async function getGitRootPath() {

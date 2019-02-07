@@ -3,6 +3,7 @@ const logger = {
     console.error(message);
     return process.exit(1);
   },
+  // tslint:disable-next-line:no-empty
   debug(message: string) {},
 };
 

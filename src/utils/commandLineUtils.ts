@@ -7,8 +7,11 @@ type ExecFileOpts = Pick<
 function makeProgram(prog: string) {
   return (args: string[], options?: ExecFileOpts): Promise<string> =>
     new Promise((resolve, reject) => {
-      const opts = (options || {}) as ExecFileOptionsWithStringEncoding;
-      opts.encoding = 'utf8';
+      const opts: ExecFileOptionsWithStringEncoding = {
+        encoding: 'utf8',
+        cwd: process.env.INIT_CWD,
+        ...options,
+      };
       childProcess.execFile(prog, args, opts, (err, stdout, stderr) => {
         if (err) {
           reject(err);

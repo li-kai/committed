@@ -18,7 +18,7 @@
     },
     "scripts": {
         "start": "ts-node src",
-        "test": "jest",
+        "test": "jest src",
         "lint": "tslint -p .",
         "prepublish": "tsc"
     },

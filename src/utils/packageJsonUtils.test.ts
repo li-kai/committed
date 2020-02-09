@@ -31,7 +31,9 @@ describe('packageJsonUtils', () => {
     vol.mkdirSync('/empty');
 
     getFiles = gitUtils.getFiles;
-    gitUtils.getFiles = jest.fn(() => Object.keys(vol.toJSON()));
+    gitUtils.getFiles = jest.fn(() =>
+      Promise.resolve(Object.keys(vol.toJSON()))
+    );
   });
 
   afterAll(() => {
